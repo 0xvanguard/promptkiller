@@ -761,19 +761,24 @@ function initLab() {
     if (labInitialized) return;
     labInitialized = true;
 
+    try {
     // Populate model selector
     const modelSelect = document.getElementById('labTargetModel');
-    modelSelect.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
-        `<option value="${id}">${m.icon} ${m.name} (${m.org})</option>`
-    ).join('');
+    if (modelSelect && typeof TARGET_MODELS !== 'undefined') {
+        modelSelect.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
+            `<option value="${id}">${m.icon} ${m.name} (${m.org})</option>`
+        ).join('');
+    }
 
     // Populate model checkboxes for testing
     const checkboxes = document.getElementById('labModelCheckboxes');
-    checkboxes.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
-        `<label class="lab-checkbox" onclick="toggleLabModel('${id}', this)">`+
-        `<input type="checkbox" value="${id}">`+
-        `${m.icon} ${m.name}</label>`
-    ).join('');
+    if (checkboxes && typeof TARGET_MODELS !== 'undefined') {
+        checkboxes.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
+            `<label class="lab-checkbox" onclick="toggleLabModel('${id}', this)">`+
+            `<input type="checkbox" value="${id}">`+
+            `${m.icon} ${m.name}</label>`
+        ).join('');
+    }
 
     // Load saved API keys
     ['openai', 'anthropic', 'openrouter'].forEach(provider => {
@@ -785,7 +790,7 @@ function initLab() {
     });
 
     // Auto-select first model
-    updateLabPreview();
+    try { updateLabPreview(); } catch(e) { console.error('updateLabPreview error:', e); }
 
     // Populate Pliny combo model selector
     const plinyModelSelect = document.getElementById('plinyTargetModel');
@@ -816,6 +821,8 @@ function initLab() {
 
     // Render Pliny combos
     renderPlinyCombos();
+
+    } catch(e) { console.error('initLab error:', e); }
 }
 
 function toggleLabConfig() {
