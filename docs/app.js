@@ -1169,6 +1169,118 @@ async function testAllStrategies() {
     displayTestResults(results);
 }
 
+// --- Chain Comparison (side-by-side) ---
+function compareChains() {
+    const topic = document.getElementById('labTopic').value || 'social engineering techniques';
+    const container = document.getElementById('labChainComparison');
+
+    // Select diverse models to compare
+    const modelsToCompare = [
+        'gemini-3.7-flash', 'gpt-4o', 'claude-sonnet-4',
+        'llama-3.1-405b', 'deepseek-v3', 'claude-opus-5'
+    ];
+
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Generating chains for ' + modelsToCompare.length + ' models...</div>';
+
+    // Generate chains for all models
+    const chains = [];
+    for (const modelId of modelsToCompare) {
+        const chain = strategyGenerator.generateAttackChain(modelId, topic, { maxLength: 7 });
+        if (chain) chains.push(chain);
+    }
+
+    if (chains.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No chains generated</p></div>';
+        return;
+    }
+
+    // Sort by estimated success (best first)
+    chains.sort((a, b) => b.estimated_success - a.estimated_success);
+
+    // Build comparison UI
+    let html = '<h4 style="margin:20px 0 16px">⚖️ Chain Comparison — ' + escapeHtml(topic) + '</h4>';
+
+    // Summary table
+    html += '<div class="compare-summary"><table class="compare-table">';
+    html += '<thead><tr><th>Model</th><th>Steps</th><th>Est. Success</th><th>Weak Areas</th><th>Diversity</th></tr></thead><tbody>';
+
+    for (const c of chains) {
+        const successColor = c.estimated_success > 0.9 ? '#ef4444' : c.estimated_success > 0.7 ? '#f97316' : '#22c55e';
+        const weakTypes = c.chain.filter(s => s.type !== 'trust_building' && s.type !== 'target' && s.type !== 'structural');
+        const uniqueTypes = [...new Set(weakTypes.map(s => s.type))];
+        html += `<tr>
+            <td><strong>${c.model}</strong></td>
+            <td>${c.chain.length}</td>
+            <td style="color:${successColor};font-weight:700">${(c.estimated_success * 100).toFixed(1)}%</td>
+            <td>${uniqueTypes.map(t => '<span class="tag tag-technique" style="margin:1px;font-size:10px">' + t + '</span>').join(' ')}</td>
+            <td>${uniqueTypes.length}/${weakTypes.length} steps</td>
+        </tr>`;
+    }
+    html += '</tbody></table></div>';
+
+    // Side-by-side chain details
+    html += '<div class="compare-chains-grid">';
+
+    for (const c of chains) {
+        const successColor = c.estimated_success > 0.9 ? '#ef4444' : c.estimated_success > 0.7 ? '#f97316' : '#22c55e';
+        html += `<div class="compare-chain-card">
+            <div class="compare-chain-header" style="border-left:4px solid ${successColor}">
+                <span class="compare-chain-model">${c.model}</span>
+                <span class="compare-chain-rate" style="color:${successColor}">${(c.estimated_success * 100).toFixed(1)}%</span>
+            </div>
+            <div class="compare-chain-steps">`;
+
+        for (const step of c.chain) {
+            const typeColors = {
+                trust_building: '#22c55e', roleplay: '#ef4444', manipulation: '#f97316',
+                multi_turn: '#eab308', encoding: '#8b5cf6', structural: '#3b82f6', target: '#06b6d4'
+            };
+            const color = typeColors[step.type] || '#6b7280';
+            html += `<div class="compare-step">
+                <div class="compare-step-header">
+                    <span class="compare-step-num" style="background:${color}">${step.step}</span>
+                    <span class="compare-step-type" style="color:${color}">${step.type.replace(/_/g, ' ')}</span>
+                </div>
+                <div class="compare-step-prompt">${escapeHtml(step.prompt.substring(0, 200))}${step.prompt.length > 200 ? '...' : ''}</div>
+            </div>`;
+        }
+
+        html += '</div></div>';
+    }
+
+    html += '</div>';
+
+    // Weakness heatmap
+    html += '<div style="margin-top:20px"><h4 style="margin-bottom:12px">🎯 Weakness Heatmap</h4>';
+    html += '<div class="compare-heatmap"><table class="heatmap-table">';
+    html += '<thead><tr><th>Category</th>';
+    for (const c of chains) {
+        html += '<th>' + c.model.replace(/ /g, '\n') + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+
+    const allCategories = ['roleplay', 'manipulation', 'multi_turn', 'encoding', 'jailbreak', 'extraction', 'injection', 'multilingual'];
+    for (const cat of allCategories) {
+        html += '<tr><td><strong>' + cat + '</strong></td>';
+        for (const c of chains) {
+            const model = TARGET_MODELS[Object.keys(TARGET_MODELS).find(k => TARGET_MODELS[k].name === c.model)];
+            if (model && model.safety_profile[cat] !== undefined) {
+                const val = model.safety_profile[cat];
+                const color = val < 0.6 ? '#22c55e' : val < 0.75 ? '#eab308' : val < 0.85 ? '#f97316' : '#ef4444';
+                const exploited = c.chain.some(s => s.type === cat);
+                html += `<td style="background:${color}20;color:${color};text-align:center;font-weight:700">${(val * 100).toFixed(0)}%${exploited ? ' ⚡' : ''}</td>`;
+            } else {
+                html += '<td style="text-align:center;color:var(--text-muted)">—</td>';
+            }
+        }
+        html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    html += '<p style="font-size:11px;color:var(--text-muted);margin-top:8px">⚡ = exploited by chain | Lower % = more vulnerable</p></div>';
+
+    container.innerHTML = html;
+}
+
 async function testAttackChain() {
     if (!labAttackChain) return;
     if (labSelectedModels.length === 0) {
