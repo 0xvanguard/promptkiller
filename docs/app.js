@@ -1565,11 +1565,11 @@ function runFuzzyAnalysis() {
     if (!input) return;
 
     const targetModel = document.getElementById('labTargetModel')?.value;
-    const score = promptScorer.scorePrompt(input, targetModel);
+    const score = promptScorer.score(input, targetModel);
     const modelAdvice = targetModel ? modelVulnDB.getModelAdvice(targetModel) : null;
     const container = document.getElementById('fuzzyResults');
 
-    const successColor = score.predicted_success > 0.7 ? '#ef4444' : score.predicted_success > 0.5 ? '#f97316' : score.predicted_success > 0.3 ? '#eab308' : '#22c55e';
+    const successColor = score.predicted_success > 0.85 ? '#ef4444' : score.predicted_success > 0.7 ? '#f97316' : score.predicted_success > 0.5 ? '#eab308' : '#22c55e';
 
     let html = `
         <div class="fuzzy-result-header" style="border-left: 4px solid ${successColor}">
