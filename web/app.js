@@ -13,7 +13,8 @@ const CAT_ICONS = {
     role_play: '🎭', injection: '💉', encoding: '🔤', jailbreak: '🔓',
     extraction: '📤', adversarial: '⚔️', manipulation: '🧠', context: '📋',
     multi_turn: '🔄', multilingual: '🌐', token_smuggling: '💉',
-    persona: '👤', tool_abuse: '🛠️', reasoning: '🧩', meta: '⚙️'
+    persona: '👤', tool_abuse: '🛠️', reasoning: '🧩', meta: '⚙️',
+    agentic: '🤖', multimodal: '🖼️', rag: '📚', supply_chain: '🔗', eval_gaming: '🎮'
 };
 
 const CAT_COLORS = {
@@ -21,7 +22,9 @@ const CAT_COLORS = {
     jailbreak: '#f97316', extraction: '#eab308', adversarial: '#ec4899',
     manipulation: '#8b5cf6', context: '#06b6d4', multi_turn: '#14b8a6',
     multilingual: '#22c55e', token_smuggling: '#f43f5e', persona: '#d946ef',
-    tool_abuse: '#6366f1', reasoning: '#f59e0b', meta: '#64748b'
+    tool_abuse: '#6366f1', reasoning: '#f59e0b', meta: '#64748b',
+    agentic: '#00d4ff', multimodal: '#ff6b9d', rag: '#4ade80',
+    supply_chain: '#f472b6', eval_gaming: '#c084fc'
 };
 
 const SEV_COLORS = {
