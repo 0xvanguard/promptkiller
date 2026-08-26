@@ -375,39 +375,74 @@
              ═══════════════════════════════════════════════ -->
         <section class="page" id="page-lab">
             <div class="page-header">
-                <h1>🧪 Red Team Lab — Strategy Generator & Live Testing</h1>
-                <p>Generate custom attack strategies, test against real AI models, and analyze vulnerabilities</p>
+                <h1>🧪 Red Team Lab — Local AI Security Research</h1>
+                <p>AI safety research lab. All testing runs on YOUR machine via Ollama. No data leaves your PC.</p>
             </div>
 
-            <!-- API Keys Configuration -->
+            <!-- Lab Mode & Local Setup -->
             <div class="lab-config-card" id="labConfig">
                 <div class="lab-config-header" onclick="toggleLabConfig()">
-                    <h3>🔑 API Configuration</h3>
+                    <h3>🏠 Lab Setup — Local Models (Recommended)</h3>
                     <span class="lab-config-toggle" id="configToggle">▼</span>
                 </div>
                 <div class="lab-config-body" id="labConfigBody">
+                    <div class="lab-disclaimer">
+                        <strong>⚡ Local Lab Mode:</strong> All prompts are tested against models running on YOUR hardware via Ollama. No API keys needed, no data sent to external servers. You are fully responsible for what you run on your machine.
+                    </div>
                     <div class="api-key-grid">
-                        <div class="api-key-item">
-                            <label>OpenAI API Key</label>
-                            <input type="password" id="apiKeyOpenAI" placeholder="sk-..." onchange="liveTester.setApiKey('openai', this.value)">
-                            <span class="api-status" id="statusOpenAI">Not configured</span>
-                        </div>
-                        <div class="api-key-item">
-                            <label>Anthropic API Key</label>
-                            <input type="password" id="apiKeyAnthropic" placeholder="sk-ant-..." onchange="liveTester.setApiKey('anthropic', this.value)">
-                            <span class="api-status" id="statusAnthropic">Not configured</span>
-                        </div>
-                        <div class="api-key-item">
-                            <label>OpenRouter API Key</label>
-                            <input type="password" id="apiKeyOpenRouter" placeholder="sk-or-..." onchange="liveTester.setApiKey('openrouter', this.value)">
-                            <span class="api-status" id="statusOpenRouter">Not configured</span>
-                        </div>
                         <div class="api-key-item">
                             <label>Ollama URL</label>
                             <input type="text" id="apiKeyOllama" placeholder="http://localhost:11434" value="http://localhost:11434" onchange="liveTester.setApiKey('ollama', this.value)">
                             <span class="api-status" id="statusOllama">Local (free)</span>
                         </div>
                     </div>
+                    <div class="lab-setup-guide" id="ollamaSetupGuide">
+                        <h4>📋 Quick Setup</h4>
+                        <div class="setup-steps">
+                            <div class="setup-step">
+                                <span class="setup-num">1</span>
+                                <div><strong>Install Ollama:</strong> <code>curl -fsSL https://ollama.com/install.sh | sh</code> or download from <a href="https://ollama.com" target="_blank">ollama.com</a></div>
+                            </div>
+                            <div class="setup-step">
+                                <span class="setup-num">2</span>
+                                <div><strong>Start Ollama:</strong> <code>ollama serve</code> (runs on localhost:11434)</div>
+                            </div>
+                            <div class="setup-step">
+                                <span class="setup-num">3</span>
+                                <div><strong>Pull a model:</strong><br>
+                                    <code>ollama pull llama3.1</code> — General purpose (8B, 70B, 405B)<br>
+                                    <code>ollama pull codellama</code> — Code-focused<br>
+                                    <code>ollama pull mistral</code> — Fast, lightweight<br>
+                                    <code>ollama pull deepseek-r1</code> — Reasoning model
+                                </div>
+                            </div>
+                            <div class="setup-step">
+                                <span class="setup-num">4</span>
+                                <div><strong>Verify:</strong> <code>ollama list</code> — should show your installed models</div>
+                            </div>
+                        </div>
+                        <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Models run 100% locally. No internet required after download. Your prompts never leave your machine.</p>
+                    </div>
+                    <details class="lab-cloud-advanced" style="margin-top:12px">
+                        <summary style="cursor:pointer;color:var(--text-muted);font-size:12px">Advanced: Cloud API Keys (for comparative research)</summary>
+                        <div class="api-key-grid" style="margin-top:8px">
+                            <div class="api-key-item">
+                                <label>OpenAI API Key</label>
+                                <input type="password" id="apiKeyOpenAI" placeholder="sk-..." onchange="liveTester.setApiKey('openai', this.value)">
+                                <span class="api-status" id="statusOpenAI">Not configured</span>
+                            </div>
+                            <div class="api-key-item">
+                                <label>Anthropic API Key</label>
+                                <input type="password" id="apiKeyAnthropic" placeholder="sk-ant-..." onchange="liveTester.setApiKey('anthropic', this.value)">
+                                <span class="api-status" id="statusAnthropic">Not configured</span>
+                            </div>
+                            <div class="api-key-item">
+                                <label>OpenRouter API Key</label>
+                                <input type="password" id="apiKeyOpenRouter" placeholder="sk-or-..." onchange="liveTester.setApiKey('openrouter', this.value)">
+                                <span class="api-status" id="statusOpenRouter">Not configured</span>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </div>
 
@@ -434,8 +469,8 @@
                             </select>
                         </div>
                         <div class="lab-field">
-                            <label>Target Topic (for chain attacks)</label>
-                            <input type="text" id="labTopic" placeholder="e.g., social engineering techniques" value="">
+                            <label>Security Topic (for chain analysis)</label>
+                            <input type="text" id="labTopic" placeholder="e.g., SQL injection detection, XSS prevention, secure coding patterns" value="">
                         </div>
                         <div class="lab-actions">
                             <button class="btn btn-primary" onclick="generateStrategies()">🎲 Generate Strategies</button>

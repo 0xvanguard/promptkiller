@@ -476,6 +476,63 @@ const TARGET_MODELS = {
         },
         known_weaknesses: ["local = no safety layer", "reasoning model = chain exploitation", "minimal RLHF"],
         color: "#00d4aa"
+    },
+    // ─── More Local Models ──────────────────────
+    "ollama-phi3": {
+        name: "Phi-3 Mini (Local)",
+        provider: "ollama",
+        org: "Microsoft (Local)",
+        icon: "🔬",
+        api_model: "phi3",
+        safety_profile: {
+            jailbreak: 0.32, injection: 0.35, roleplay: 0.22,
+            encoding: 0.30, manipulation: 0.25, extraction: 0.33,
+            multi_turn: 0.20, multilingual: 0.28
+        },
+        known_weaknesses: ["small model (3.8B)", "minimal safety training", "fast inference"],
+        color: "#00a4ef"
+    },
+    "ollama-gemma2": {
+        name: "Gemma 2 9B (Local)",
+        provider: "ollama",
+        org: "Google (Local)",
+        icon: "💎",
+        api_model: "gemma2",
+        safety_profile: {
+            jailbreak: 0.38, injection: 0.40, roleplay: 0.28,
+            encoding: 0.35, manipulation: 0.30, extraction: 0.37,
+            multi_turn: 0.25, multilingual: 0.35
+        },
+        known_weaknesses: ["Google safety but local deployment", "moderate RLHF", "9B size"],
+        color: "#4285f4"
+    },
+    "ollama-qwen2.5": {
+        name: "Qwen 2.5 7B (Local)",
+        provider: "ollama",
+        org: "Alibaba (Local)",
+        icon: "☁️",
+        api_model: "qwen2.5:7b",
+        safety_profile: {
+            jailbreak: 0.35, injection: 0.38, roleplay: 0.25,
+            encoding: 0.33, manipulation: 0.28, extraction: 0.36,
+            multi_turn: 0.22, multilingual: 0.40
+        },
+        known_weaknesses: ["Chinese safety training gaps", "multilingual transfer", "7B size"],
+        color: "#ff6a00"
+    },
+    "ollama-codellama": {
+        name: "Code Llama 13B (Local)",
+        provider: "ollama",
+        org: "Meta (Local)",
+        icon: "🦙",
+        api_model: "codellama:13b",
+        safety_profile: {
+            jailbreak: 0.30, injection: 0.32, roleplay: 0.20,
+            encoding: 0.28, manipulation: 0.24, extraction: 0.31,
+            multi_turn: 0.18, multilingual: 0.25
+        },
+        known_weaknesses: ["code-focused = less safety on non-code topics", "13B size", "instruction following"],
+        color: "#1877f2"
     }
 };
 

@@ -765,8 +765,14 @@ function initLab() {
     // Populate model selector
     const modelSelect = document.getElementById('labTargetModel');
     if (modelSelect && typeof TARGET_MODELS !== 'undefined') {
-        modelSelect.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
-            `<option value="${id}">${m.icon} ${m.name} (${m.org})</option>`
+        // Sort: local models first, then cloud models
+        const sortedModels = Object.entries(TARGET_MODELS).sort((a, b) => {
+            const aLocal = a[1].provider === 'ollama' ? 0 : 1;
+            const bLocal = b[1].provider === 'ollama' ? 0 : 1;
+            return aLocal - bLocal;
+        });
+        modelSelect.innerHTML = sortedModels.map(([id, m]) =>
+            `<option value="${id}">${m.icon} ${m.name} (${m.org})${m.provider === 'ollama' ? ' 🏠' : ''}</option>`
         ).join('');
     }
 
