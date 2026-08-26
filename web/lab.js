@@ -386,7 +386,7 @@ const TARGET_MODELS = {
             encoding: 0.74, manipulation: 0.66, extraction: 0.78,
             multi_turn: 0.67, multilingual: 0.75
         },
-        known_weaknesses: [""edgy" persona = easier manipulation", "Twitter/X context bypass", "humor-based framing"],
+        known_weaknesses: ["edgy persona = easier manipulation", "Twitter/X context bypass", "humor-based framing"],
         color: "#1d9bf0"
     },
     // ─── Moonshot ────────────────────────────────
