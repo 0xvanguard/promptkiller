@@ -95,6 +95,23 @@ python -m pytest tests/ -v
 
 All 8 tests cover: initialization, categories, search, random selection, threat scanning, statistics, and prompt addition.
 
+## 🌐 Web UI
+
+Interactive dashboard to visualize and explore all 501 attack prompts:
+
+```bash
+cd promptkiller/web
+python -m http.server 8080
+# Open http://localhost:8080
+```
+
+**Features:**
+- 📊 **Dashboard** — Real-time stats, charts, and critical threats
+- 🔍 **Threat Scanner** — Test any prompt against the 501-attack database
+- 📋 **Prompt Database** — Browse, search, and filter all 501 prompts
+- 📈 **Visualizations** — Radar charts, heatmaps, tag clouds, attack chains
+- 🗺️ **Attack Map** — Interactive category tiles and OWASP LLM Top 10 coverage
+
 ## 📁 Project Structure
 
 ```
@@ -107,6 +124,11 @@ promptkiller/
 │   ├── prompts_batch3.py    # Batch 3: ~55 prompts
 │   ├── prompts_batch4.py    # Batch 4: ~28 prompts
 │   └── prompts_final.py     # Final batch: 14 prompts
+├── web/
+│   ├── index.html           # Web UI (6 pages)
+│   ├── style.css            # Dark theme styles
+│   ├── app.js               # App logic (charts, scanner, browser)
+│   └── data.js              # Auto-generated 501-prompt dataset
 ├── tests/
 │   └── test_promptkiller.py # Test suite
 ├── requirements.txt
