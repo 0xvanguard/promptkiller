@@ -774,8 +774,8 @@ function initLab() {
     const checkboxes = document.getElementById('labModelCheckboxes');
     if (checkboxes && typeof TARGET_MODELS !== 'undefined') {
         checkboxes.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
-            `<label class="lab-checkbox" onclick="toggleLabModel('${id}', this)">`+
-            `<input type="checkbox" value="${id}">`+
+            `<label class="lab-checkbox">`+
+            `<input type="checkbox" value="${id}" onchange="toggleLabModel('${id}', this)">`+
             `${m.icon} ${m.name}</label>`
         ).join('');
     }
@@ -833,13 +833,14 @@ function toggleLabConfig() {
 }
 
 function toggleLabModel(id, el) {
-    const idx = labSelectedModels.indexOf(id);
-    if (idx > -1) {
-        labSelectedModels.splice(idx, 1);
-        el.classList.remove('checked');
+    const label = el.closest('.lab-checkbox');
+    if (el.checked) {
+        if (!labSelectedModels.includes(id)) labSelectedModels.push(id);
+        if (label) label.classList.add('checked');
     } else {
-        labSelectedModels.push(id);
-        el.classList.add('checked');
+        const idx = labSelectedModels.indexOf(id);
+        if (idx > -1) labSelectedModels.splice(idx, 1);
+        if (label) label.classList.remove('checked');
     }
 }
 
