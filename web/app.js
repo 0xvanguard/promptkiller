@@ -808,6 +808,15 @@ function initLab() {
         ).join('');
     }
 
+    // Populate batch analysis model selector
+    const batchModelSelect = document.getElementById('batchTargetModel');
+    if (batchModelSelect) {
+        batchModelSelect.innerHTML = '<option value="">Generic (no model)</option>' +
+            Object.entries(TARGET_MODELS).map(([id, m]) =>
+                `<option value="${id}">${m.icon} ${m.name}</option>`
+            ).join('');
+    }
+
     // Populate comparison checkboxes
     const compareCheckboxes = document.getElementById('compareModelCheckboxes');
     if (compareCheckboxes) {
@@ -2016,6 +2025,217 @@ function runFingerprint() {
     } else {
         html += '<p style="color:var(--text-muted)">Could not identify model family from this response.</p>';
     }
+
+    container.innerHTML = html;
+}
+
+// --- Batch Analysis (offline, scores all 629 prompts) ---
+let batchRunning = false;
+
+function runBatchAnalysis() {
+    if (batchRunning) return;
+    if (typeof ALL_PROMPTS === 'undefined' || !ALL_PROMPTS || ALL_PROMPTS.length === 0) {
+        document.getElementById('batchResults').innerHTML = '<div class="empty-state"><p>Error: ALL_PROMPTS not loaded. Make sure data.js is loaded.</p></div>';
+        return;
+    }
+
+    batchRunning = true;
+    document.getElementById('batchRunBtn').disabled = true;
+    document.getElementById('batchProgress').style.display = 'block';
+
+    const targetModel = document.getElementById('batchTargetModel').value || null;
+    const minScore = parseFloat(document.getElementById('batchMinScore').value) || 0;
+    const container = document.getElementById('batchResults');
+    const total = ALL_PROMPTS.length;
+
+    // Score all prompts (chunked to avoid blocking)
+    const results = [];
+    const batchSize = 50;
+    let processed = 0;
+
+    function processBatch() {
+        const end = Math.min(processed + batchSize, total);
+        for (let i = processed; i < end; i++) {
+            const p = ALL_PROMPTS[i];
+            const score = promptScorer.score(p.prompt, targetModel);
+            results.push({
+                ...p,
+                predicted_success: score.predicted_success,
+                bypass_score: score.bypass_score,
+                refusal_score: score.refusal_score,
+                structural_score: score.structural_score,
+                weaknesses: score.weaknesses,
+                recommendations: score.recommendations,
+                metadata: score.metadata
+            });
+        }
+        processed = end;
+
+        const pct = (processed / total * 100).toFixed(0);
+        document.getElementById('batchProgressFill').style.width = pct + '%';
+        document.getElementById('batchProgressText').textContent = `Analyzing: ${processed}/${total} (${pct}%)`;
+
+        if (processed < total) {
+            requestAnimationFrame(processBatch);
+        } else {
+            batchRunning = false;
+            document.getElementById('batchRunBtn').disabled = false;
+            displayBatchResults(results, minScore, targetModel);
+        }
+    }
+
+    requestAnimationFrame(processBatch);
+}
+
+function displayBatchResults(results, minScore, targetModel) {
+    const container = document.getElementById('batchResults');
+
+    // Filter by min score
+    const filtered = minScore > 0 ? results.filter(r => r.predicted_success >= minScore) : results;
+
+    // Sort by predicted success (highest first)
+    filtered.sort((a, b) => b.predicted_success - a.predicted_success);
+
+    // Category aggregation
+    const categoryStats = {};
+    results.forEach(r => {
+        if (!categoryStats[r.category]) {
+            categoryStats[r.category] = { count: 0, totalSuccess: 0, totalBypass: 0, totalRefusal: 0, totalStructural: 0, max: 0, min: 1 };
+        }
+        const cs = categoryStats[r.category];
+        cs.count++;
+        cs.totalSuccess += r.predicted_success;
+        cs.totalBypass += r.bypass_score;
+        cs.totalRefusal += r.refusal_score;
+        cs.totalStructural += r.structural_score;
+        cs.max = Math.max(cs.max, r.predicted_success);
+        cs.min = Math.min(cs.min, r.predicted_success);
+    });
+
+    // Severity stats
+    const severityStats = { high: [], medium: [], low: [] };
+    results.forEach(r => {
+        if (severityStats[r.severity]) severityStats[r.severity].push(r.predicted_success);
+    });
+
+    // Distribution buckets
+    const distribution = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 0-10%, 10-20%, etc.
+    results.forEach(r => {
+        const bucket = Math.min(9, Math.floor(r.predicted_success * 10));
+        distribution[bucket]++;
+    });
+
+    let html = '';
+
+    // === Summary Stats ===
+    const avgSuccess = results.reduce((s, r) => s + r.predicted_success, 0) / results.length;
+    const avgBypass = results.reduce((s, r) => s + r.bypass_score, 0) / results.length;
+    const avgRefusal = results.reduce((s, r) => s + r.refusal_score, 0) / results.length;
+    const highCount = results.filter(r => r.predicted_success >= 0.8).length;
+    const zeroRefusal = results.filter(r => r.refusal_score <= 0.05).length;
+
+    html += '<div class="batch-summary">';
+    html += `<div class="batch-stat"><span class="batch-stat-val">${results.length}</span><span>Total Prompts</span></div>`;
+    html += `<div class="batch-stat"><span class="batch-stat-val" style="color:#ef4444">${(avgSuccess * 100).toFixed(1)}%</span><span>Avg Success</span></div>`;
+    html += `<div class="batch-stat"><span class="batch-stat-val" style="color:#f97316">${(avgBypass * 100).toFixed(1)}%</span><span>Avg Bypass</span></div>`;
+    html += `<div class="batch-stat"><span class="batch-stat-val" style="color:#22c55e">${(avgRefusal * 100).toFixed(1)}%</span><span>Avg Refusal</span></div>`;
+    html += `<div class="batch-stat"><span class="batch-stat-val">${highCount}</span><span>80%+ Success</span></div>`;
+    html += `<div class="batch-stat"><span class="batch-stat-val">${zeroRefusal}</span><span>0% Refusal</span></div>`;
+    html += '</div>';
+
+    if (minScore > 0) {
+        html += `<p style="color:var(--text-muted);font-size:12px;margin-bottom:12px">Showing ${filtered.length} of ${results.length} prompts (${minScore * 100}%+ success)</p>`;
+    }
+
+    // === Distribution Chart ===
+    html += '<div class="batch-section"><h4>📊 Score Distribution</h4><div class="batch-distribution">';
+    const maxDist = Math.max(...distribution);
+    const distLabels = ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-60%', '60-70%', '70-80%', '80-90%', '90-100%'];
+    for (let i = 0; i < distribution.length; i++) {
+        const height = maxDist > 0 ? (distribution[i] / maxDist * 100) : 0;
+        const color = i >= 8 ? '#ef4444' : i >= 6 ? '#f97316' : i >= 4 ? '#eab308' : '#22c55e';
+        html += `<div class="batch-dist-bar">
+            <div class="batch-dist-fill" style="height:${height}%;background:${color}"></div>
+            <div class="batch-dist-label">${distLabels[i]}</div>
+            <div class="batch-dist-count">${distribution[i]}</div>
+        </div>`;
+    }
+    html += '</div></div>';
+
+    // === Category Breakdown ===
+    html += '<div class="batch-section"><h4>📁 By Category</h4><table class="batch-table"><thead><tr>';
+    html += '<th>Category</th><th>Count</th><th>Avg Success</th><th>Avg Bypass</th><th>Avg Refusal</th><th>Best</th><th>Worst</th><th>Bar</th>';
+    html += '</tr></thead><tbody>';
+
+    const sortedCats = Object.entries(categoryStats).sort((a, b) => (b[1].totalSuccess / b[1].count) - (a[1].totalSuccess / a[1].count));
+
+    for (const [cat, cs] of sortedCats) {
+        const avg = cs.totalSuccess / cs.count;
+        const avgB = cs.totalBypass / cs.count;
+        const avgR = cs.totalRefusal / cs.count;
+        const barColor = avg > 0.7 ? '#ef4444' : avg > 0.5 ? '#f97316' : avg > 0.3 ? '#eab308' : '#22c55e';
+        html += `<tr>
+            <td><strong>${cat.replace(/_/g, ' ')}</strong></td>
+            <td>${cs.count}</td>
+            <td style="color:${barColor};font-weight:700">${(avg * 100).toFixed(1)}%</td>
+            <td>${(avgB * 100).toFixed(1)}%</td>
+            <td>${(avgR * 100).toFixed(1)}%</td>
+            <td style="color:#ef4444">${(cs.max * 100).toFixed(1)}%</td>
+            <td style="color:#22c55e">${(cs.min * 100).toFixed(1)}%</td>
+            <td><div style="width:120px;height:8px;background:var(--bg-primary);border-radius:4px;overflow:hidden">
+                <div style="width:${avg * 100}%;height:100%;background:${barColor};border-radius:4px"></div>
+            </div></td>
+        </tr>`;
+    }
+    html += '</tbody></table></div>';
+
+    // === Top 20 Ranking ===
+    html += '<div class="batch-section"><h4>🏆 Top 20 Most Effective Prompts</h4>';
+    for (let i = 0; i < Math.min(20, filtered.length); i++) {
+        const r = filtered[i];
+        const successColor = r.predicted_success > 0.85 ? '#ef4444' : r.predicted_success > 0.7 ? '#f97316' : r.predicted_success > 0.5 ? '#eab308' : '#22c55e';
+        html += `<div class="batch-rank-card" style="border-left:4px solid ${successColor}">
+            <div class="batch-rank-header">
+                <span class="batch-rank-num">#${i + 1}</span>
+                <span class="batch-rank-name">${escapeHtml(r.name)}</span>
+                <span class="batch-rank-cat">${r.category.replace(/_/g, ' ')}</span>
+                <span class="batch-rank-score" style="color:${successColor}">${(r.predicted_success * 100).toFixed(1)}%</span>
+            </div>
+            <div class="batch-rank-prompt">${escapeHtml(r.prompt.substring(0, 200))}${r.prompt.length > 200 ? '...' : ''}</div>
+            <div class="batch-rank-meta">
+                <span>Bypass: ${(r.bypass_score * 100).toFixed(0)}%</span>
+                <span>Refusal: ${(r.refusal_score * 100).toFixed(0)}%</span>
+                <span>Structural: ${(r.structural_score * 100).toFixed(0)}%</span>
+                <span>Severity: ${r.severity || 'N/A'}</span>
+            </div>
+        </div>`;
+    }
+    html += '</div>';
+
+    // === Full Table (all results) ===
+    html += `<div class="batch-section"><h4>📋 Full Results (${filtered.length} prompts)</h4>`;
+    html += '<div style="overflow-x:auto"><table class="batch-table"><thead><tr>';
+    html += '<th>#</th><th>Name</th><th>Category</th><th>Success</th><th>Bypass</th><th>Refusal</th><th>Structural</th><th>Severity</th>';
+    html += '</tr></thead><tbody>';
+
+    for (let i = 0; i < filtered.length; i++) {
+        const r = filtered[i];
+        const sc = r.predicted_success > 0.8 ? '#ef4444' : r.predicted_success > 0.6 ? '#f97316' : '#22c55e';
+        html += `<tr style="cursor:pointer" onclick="document.getElementById('batchPromptModal').innerHTML=\'<div class=batch-modal-content><h4>${escapeHtml(r.name)}</h4><p class=batch-modal-cat>${r.category} / ${r.technique}</p><pre class=batch-modal-prompt>${escapeHtml(r.prompt)}</pre><div class=batch-modal-scores>Success: ${(r.predicted_success*100).toFixed(1)}% | Bypass: ${(r.bypass_score*100).toFixed(1)}% | Refusal: ${(r.refusal_score*100).toFixed(1)}% | Structural: ${(r.structural_score*100).toFixed(1)}%</div></div>\';document.getElementById('batchPromptModal').style.display='flex'">
+            <td>${i + 1}</td>
+            <td><strong>${escapeHtml(r.name)}</strong></td>
+            <td>${r.category.replace(/_/g, ' ')}</td>
+            <td style="color:${sc};font-weight:700">${(r.predicted_success * 100).toFixed(1)}%</td>
+            <td>${(r.bypass_score * 100).toFixed(0)}%</td>
+            <td>${(r.refusal_score * 100).toFixed(0)}%</td>
+            <td>${(r.structural_score * 100).toFixed(0)}%</td>
+            <td>${r.severity || '—'}</td>
+        </tr>`;
+    }
+    html += '</tbody></table></div></div>';
+
+    // Modal for full prompt view
+    html += '<div id="batchPromptModal" class="batch-modal" onclick="this.style.display=\'none\'" style="display:none"></div>';
 
     container.innerHTML = html;
 }

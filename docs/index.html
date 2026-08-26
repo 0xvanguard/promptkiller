@@ -511,6 +511,7 @@
                     <button class="expert-tab" onclick="switchExpertTab('compare')">⚖️ Comparative</button>
                     <button class="expert-tab" onclick="switchExpertTab('export')">📄 Export Reports</button>
                     <button class="expert-tab" onclick="switchExpertTab('fingerprint')">🔍 Model Fingerprint</button>
+                    <button class="expert-tab" onclick="switchExpertTab('batch')">📊 Batch Analysis</button>
                 </div>
 
                 <!-- Fuzzy Analyzer Tab -->
@@ -641,6 +642,45 @@
                         </div>
                         <div class="expert-results" id="fpResults">
                             <div class="empty-state"><p>Paste a response to identify the model</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Analysis Tab -->
+                <div class="expert-content" id="expert-batch">
+                    <div class="expert-grid" style="grid-template-columns:1fr">
+                        <div class="expert-input">
+                            <label>Batch Analysis — Score all 629 prompts from the catalog</label>
+                            <p style="color:var(--text-secondary);font-size:12px;margin-bottom:12px">
+                                Analyzes every prompt with the PromptScorer engine. No API keys needed — pure offline analysis.<br>
+                                Select a target model for model-specific scoring, or leave empty for generic scoring.
+                            </p>
+                            <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                                <div class="lab-field" style="flex:1;min-width:180px">
+                                    <label>Target Model (optional)</label>
+                                    <select id="batchTargetModel">
+                                        <option value="">Generic (no model)</option>
+                                    </select>
+                                </div>
+                                <div class="lab-field" style="flex:1;min-width:140px">
+                                    <label>Min Score Filter</label>
+                                    <select id="batchMinScore">
+                                        <option value="0">Show all</option>
+                                        <option value="0.5">50%+ only</option>
+                                        <option value="0.7">70%+ only</option>
+                                        <option value="0.8">80%+ only</option>
+                                        <option value="0.9">90%+ only</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" id="batchRunBtn" onclick="runBatchAnalysis()">📊 Run Batch Analysis</button>
+                            </div>
+                        </div>
+                        <div id="batchProgress" style="display:none">
+                            <div class="lab-progress-bar"><div class="lab-progress-fill" id="batchProgressFill"></div></div>
+                            <div class="lab-progress-text" id="batchProgressText">0%</div>
+                        </div>
+                        <div id="batchResults">
+                            <div class="empty-state"><p>Click "Run Batch Analysis" to analyze all 629 prompts</p></div>
                         </div>
                     </div>
                 </div>
