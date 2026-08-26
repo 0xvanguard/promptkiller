@@ -2093,8 +2093,55 @@ function runBatchAnalysis() {
     requestAnimationFrame(processBatch);
 }
 
+let batchAllResults = [];
+let batchCurrentMinScore = 0;
+
+function filterBatchResults() {
+    const searchTerm = (document.getElementById('batchSearch')?.value || '').toLowerCase();
+    const catFilter = document.getElementById('batchCategoryFilter')?.value || '';
+    const sortField = document.getElementById('batchSortBy')?.value || 'success';
+
+    let filtered = batchAllResults;
+
+    // Filter by min score
+    if (batchCurrentMinScore > 0) {
+        filtered = filtered.filter(r => r.predicted_success >= batchCurrentMinScore);
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+        filtered = filtered.filter(r =>
+            r.name.toLowerCase().includes(searchTerm) ||
+            r.prompt.toLowerCase().includes(searchTerm) ||
+            r.category.toLowerCase().includes(searchTerm) ||
+            (r.technique && r.technique.toLowerCase().includes(searchTerm))
+        );
+    }
+
+    // Filter by category
+    if (catFilter) {
+        filtered = filtered.filter(r => r.category === catFilter);
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+        switch (sortField) {
+            case 'success': return b.predicted_success - a.predicted_success;
+            case 'bypass': return b.bypass_score - a.bypass_score;
+            case 'refusal': return a.refusal_score - b.refusal_score;
+            case 'structural': return b.structural_score - a.structural_score;
+            case 'name': return a.name.localeCompare(b.name);
+            default: return b.predicted_success - a.predicted_success;
+        }
+    });
+
+    renderBatchFullTable(filtered);
+}
+
 function displayBatchResults(results, minScore, targetModel) {
     const container = document.getElementById('batchResults');
+    batchAllResults = results;
+    batchCurrentMinScore = minScore;
 
     // Filter by min score
     const filtered = minScore > 0 ? results.filter(r => r.predicted_success >= minScore) : results;
@@ -2218,16 +2265,38 @@ function displayBatchResults(results, minScore, targetModel) {
     }
     html += '</div>';
 
-    // === Full Table (all results) ===
-    html += `<div class="batch-section"><h4>📋 Full Results (${filtered.length} prompts)</h4>`;
-    html += '<div style="overflow-x:auto"><table class="batch-table"><thead><tr>';
+    // === Full Table with Search & Filters ===
+    const categories = [...new Set(results.map(r => r.category))].sort();
+    html += `<div class="batch-section"><h4>📋 Full Results (<span id="batchCount">${filtered.length}</span> prompts)</h4>`;
+    html += '<div class="batch-filters"><input type="text" id="batchSearch" placeholder="Search name, prompt, category..." oninput="filterBatchResults()" class="batch-search-input"><select id="batchCategoryFilter" onchange="filterBatchResults()" class="batch-filter-select"><option value="">All Categories</option>';
+    categories.forEach(c => { html += `<option value="${c}">${c.replace(/_/g, ' ')}</option>`; });
+    html += '</select><select id="batchSortBy" onchange="filterBatchResults()" class="batch-filter-select"><option value="success">Sort: Success</option><option value="bypass">Sort: Bypass</option><option value="refusal">Sort: Refusal</option><option value="structural">Sort: Structural</option><option value="name">Sort: Name</option></select></div>';
+    html += '<div id="batchFullTable"></div>';
+    html += '</div>';
+
+    // Modal for full prompt view
+    html += '<div id="batchPromptModal" class="batch-modal" onclick="this.style.display=\'none\'" style="display:none"></div>';
+
+    container.innerHTML = html;
+
+    // Render the initial table
+    renderBatchFullTable(filtered);
+}
+
+function renderBatchFullTable(data) {
+    const tableContainer = document.getElementById('batchFullTable');
+    const countEl = document.getElementById('batchCount');
+    if (!tableContainer) return;
+    if (countEl) countEl.textContent = data.length;
+
+    let html = '<div style="overflow-x:auto"><table class="batch-table"><thead><tr>';
     html += '<th>#</th><th>Name</th><th>Category</th><th>Success</th><th>Bypass</th><th>Refusal</th><th>Structural</th><th>Severity</th>';
     html += '</tr></thead><tbody>';
 
-    for (let i = 0; i < filtered.length; i++) {
-        const r = filtered[i];
+    for (let i = 0; i < data.length; i++) {
+        const r = data[i];
         const sc = r.predicted_success > 0.8 ? '#ef4444' : r.predicted_success > 0.6 ? '#f97316' : '#22c55e';
-        html += `<tr style="cursor:pointer" onclick="document.getElementById('batchPromptModal').innerHTML=\'<div class=batch-modal-content><h4>${escapeHtml(r.name)}</h4><p class=batch-modal-cat>${r.category} / ${r.technique}</p><pre class=batch-modal-prompt>${escapeHtml(r.prompt)}</pre><div class=batch-modal-scores>Success: ${(r.predicted_success*100).toFixed(1)}% | Bypass: ${(r.bypass_score*100).toFixed(1)}% | Refusal: ${(r.refusal_score*100).toFixed(1)}% | Structural: ${(r.structural_score*100).toFixed(1)}%</div></div>\';document.getElementById('batchPromptModal').style.display='flex'">
+        html += `<tr style="cursor:pointer" onclick="showBatchModal('${escapeHtml(r.name).replace(/'/g, "\\'")}','${r.category}','${r.technique||''}',\`${escapeHtml(r.prompt).replace(/`/g, '\`')}\`,${r.predicted_success},${r.bypass_score},${r.refusal_score},${r.structural_score})">
             <td>${i + 1}</td>
             <td><strong>${escapeHtml(r.name)}</strong></td>
             <td>${r.category.replace(/_/g, ' ')}</td>
@@ -2238,12 +2307,99 @@ function displayBatchResults(results, minScore, targetModel) {
             <td>${r.severity || '—'}</td>
         </tr>`;
     }
-    html += '</tbody></table></div></div>';
+    html += '</tbody></table></div>';
+    tableContainer.innerHTML = html;
+}
 
-    // Modal for full prompt view
-    html += '<div id="batchPromptModal" class="batch-modal" onclick="this.style.display=\'none\'" style="display:none"></div>';
+function showBatchModal(name, category, technique, prompt, success, bypass, refusal, structural) {
+    const modal = document.getElementById('batchPromptModal');
+    modal.innerHTML = `<div class="batch-modal-content">
+        <h4>${name}</h4>
+        <p class="batch-modal-cat">${category} / ${technique}</p>
+        <pre class="batch-modal-prompt">${prompt}</pre>
+        <div class="batch-modal-scores">
+            Success: ${(success*100).toFixed(1)}% | Bypass: ${(bypass*100).toFixed(1)}% | Refusal: ${(refusal*100).toFixed(1)}% | Structural: ${(structural*100).toFixed(1)}%
+        </div>
+    </div>`;
+    modal.style.display = 'flex';
+}
 
-    container.innerHTML = html;
+// --- Report Generator (downloadable HTML) ---
+function generateReport() {
+    if (!batchAllResults || batchAllResults.length === 0) {
+        alert('Run Batch Analysis first to generate a report.');
+        return;
+    }
+    const results = batchAllResults;
+    const avgSuccess = results.reduce((s, r) => s + r.predicted_success, 0) / results.length;
+    const avgBypass = results.reduce((s, r) => s + r.bypass_score, 0) / results.length;
+    const avgRefusal = results.reduce((s, r) => s + r.refusal_score, 0) / results.length;
+    const top20 = results.slice().sort((a, b) => b.predicted_success - a.predicted_success).slice(0, 20);
+    const catStats = {};
+    results.forEach(r => {
+        if (!catStats[r.category]) catStats[r.category] = { count: 0, total: 0 };
+        catStats[r.category].count++;
+        catStats[r.category].total += r.predicted_success;
+    });
+    const now = new Date().toISOString().split('T')[0];
+
+    let html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PromptKiller Security Assessment Report</title>';
+    html += '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,system-ui,sans-serif;background:#0d0d0d;color:#f0ece4;line-height:1.6;padding:40px}h1{font-size:28px;margin-bottom:8px}h2{font-size:20px;margin:32px 0 16px;border-bottom:1px solid #333;padding-bottom:8px}h3{font-size:16px;margin:16px 0 8px}.meta{color:#7a7570;font-size:13px;margin-bottom:24px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:16px 0}.stat{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:16px;text-align:center}.stat-val{font-size:24px;font-weight:800;display:block}.stat-label{font-size:11px;color:#7a7570;text-transform:uppercase}table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}th{text-align:left;padding:10px;background:#1a1a1a;border-bottom:1px solid #333;font-size:11px;text-transform:uppercase;color:#7a7570}td{padding:10px;border-bottom:1px solid #222}.high{color:#ef4444;font-weight:700}.med{color:#f97316;font-weight:700}.low{color:#22c55e;font-weight:700}.prompt-box{background:#1a1a1a;border:1px solid #333;border-radius:6px;padding:12px;font-size:12px;font-family:monospace;margin:8px 0;white-space:pre-wrap;word-break:break-word;max-height:120px;overflow-y:auto}.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin:2px}.badge-red{background:#ef444430;color:#ef4444}.badge-orange{background:#f9731630;color:#f97316}.badge-green{background:#22c55e30;color:#22c55e}.footer{margin-top:40px;padding-top:16px;border-top:1px solid #333;font-size:11px;color:#7a7570;text-align:center}@media print{body{background:#fff;color:#000}th{background:#eee}td{border-color:#ddd}.stat{border-color:#ddd;background:#f5f5f5}}</style></head><body>';
+
+    html += '<h1>PromptKiller Security Assessment Report</h1>';
+    html += '<div class="meta">Generated: ' + now + ' | Prompts Analyzed: ' + results.length + ' | AI Safety Research Lab</div>';
+
+    html += '<h2>1. Executive Summary</h2>';
+    html += '<div class="grid">';
+    html += '<div class="stat"><span class="stat-val">' + results.length + '</span><span class="stat-label">Total Prompts</span></div>';
+    html += '<div class="stat"><span class="stat-val high">' + (avgSuccess * 100).toFixed(1) + '%</span><span class="stat-label">Avg Predicted Success</span></div>';
+    html += '<div class="stat"><span class="stat-val med">' + (avgBypass * 100).toFixed(1) + '%</span><span class="stat-label">Avg Bypass Score</span></div>';
+    html += '<div class="stat"><span class="stat-val low">' + (avgRefusal * 100).toFixed(1) + '%</span><span class="stat-label">Avg Refusal Risk</span></div>';
+    html += '<div class="stat"><span class="stat-val">' + results.filter(r => r.predicted_success >= 0.8).length + '</span><span class="stat-label">80%+ Success</span></div>';
+    html += '<div class="stat"><span class="stat-val">' + Object.keys(catStats).length + '</span><span class="stat-label">Categories</span></div>';
+    html += '</div>';
+
+    html += '<h2>2. Methodology</h2>';
+    html += '<p>This report was generated using the PromptKiller PromptScorer v2 engine. Each prompt from the 629-prompt catalog was analyzed offline using pattern matching, structural analysis, and model-specific vulnerability knowledge. No API calls were made.</p>';
+    html += '<p>The scoring engine evaluates: authorization frames, refusal triggers, structural elements (code blocks, both versions, severity ratings, OWASP refs), and model-specific difficulty adjustments.</p>';
+
+    html += '<h2>3. Results by Category</h2>';
+    html += '<table><thead><tr><th>Category</th><th>Count</th><th>Avg Success</th><th>Rating</th></tr></thead><tbody>';
+    const sortedCats = Object.entries(catStats).sort((a, b) => (b[1].total / b[1].count) - (a[1].total / a[1].count));
+    sortedCats.forEach(([cat, cs]) => {
+        const avg = cs.total / cs.count;
+        const cls = avg > 0.6 ? 'high' : avg > 0.4 ? 'med' : 'low';
+        html += '<tr><td><strong>' + cat.replace(/_/g, ' ') + '</strong></td><td>' + cs.count + '</td><td class="' + cls + '">' + (avg * 100).toFixed(1) + '%</td><td><span class="badge badge-' + (avg > 0.6 ? 'red' : avg > 0.4 ? 'orange' : 'green') + '">' + (avg > 0.6 ? 'HIGH RISK' : avg > 0.4 ? 'MEDIUM' : 'LOW') + '</span></td></tr>';
+    });
+    html += '</tbody></table>';
+
+    html += '<h2>4. Top 20 Most Effective Prompts</h2>';
+    html += '<table><thead><tr><th>#</th><th>Name</th><th>Category</th><th>Success</th><th>Bypass</th><th>Refusal</th></tr></thead><tbody>';
+    top20.forEach((r, i) => {
+        const cls = r.predicted_success > 0.7 ? 'high' : r.predicted_success > 0.5 ? 'med' : 'low';
+        html += '<tr><td>' + (i + 1) + '</td><td><strong>' + r.name + '</strong></td><td>' + r.category.replace(/_/g, ' ') + '</td><td class="' + cls + '">' + (r.predicted_success * 100).toFixed(1) + '%</td><td>' + (r.bypass_score * 100).toFixed(0) + '%</td><td>' + (r.refusal_score * 100).toFixed(0) + '%</td></tr>';
+    });
+    html += '</tbody></table>';
+
+    html += '<h2>5. Recommendations</h2>';
+    html += '<ul style="padding-left:20px">';
+    html += '<li>Prompts with authorization frames (OWASP, NIST) consistently score higher success rates</li>';
+    html += '<li>Structural elements (code blocks, both VULNERABLE + SECURE versions) increase bypass by 10-15%</li>';
+    html += '<li>Refusal triggers (ignore instructions, DAN, jailbreak) should never be used - they reduce success by 20-40%</li>';
+    html += '<li>Multi-turn chains with gradual escalation outperform single-turn attacks</li>';
+    html += '<li>Model-specific targeting improves success by 5-10% compared to generic prompts</li>';
+    html += '</ul>';
+
+    html += '<div class="footer">PromptKiller v5.0 PRO | AI Safety Research Lab | Report generated on ' + now + '</div>';
+    html += '</body></html>';
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'promptkiller-report-' + now + '.html';
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 // --- Utilities ---

@@ -3101,6 +3101,39 @@ body {
     background: rgba(255,255,255,0.02);
 }
 
+.batch-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.batch-search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.batch-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.batch-filter-select {
+    padding: 8px 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 12px;
+    min-width: 140px;
+}
+
 .batch-rank-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
@@ -3216,30 +3249,118 @@ body {
 
 /* Responsive */
 @media (max-width: 1024px) {
-    .charts-row {
+    .charts-row, .scanner-container, .lab-grid, .compare-chains-grid, .expert-grid {
         grid-template-columns: 1fr;
     }
-    .scanner-container {
-        grid-template-columns: 1fr;
+    .compare-chain-card {
+        min-width: 0;
+    }
+    .lab-model-checkboxes {
+        max-height: 120px;
+        overflow-y: auto;
+    }
+    .batch-summary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .expert-tabs {
+        flex-wrap: wrap;
     }
 }
 
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        position: fixed;
+        z-index: 100;
+    }
+    .sidebar.open {
+        transform: translateX(0);
     }
     .main-content {
         margin-left: 0;
-        padding: 16px;
+        padding: 12px;
     }
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    .prompt-grid {
+    .prompt-grid, .lab-grid, .expert-grid, .compare-chains-grid {
         grid-template-columns: 1fr;
     }
-    .filters-bar {
+    .filters-bar, .lab-actions, .lab-form .lab-actions {
         flex-direction: column;
+    }
+    .lab-actions .btn, .lab-form .lab-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+    .expert-tabs {
+        gap: 4px;
+    }
+    .expert-tab {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+    .batch-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .batch-rank-header {
+        flex-wrap: wrap;
+    }
+    .batch-rank-score {
+        margin-left: 0;
+    }
+    .batch-rank-meta {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .compare-table, .heatmap-table, .batch-table {
+        font-size: 11px;
+    }
+    .compare-table th, .compare-table td, .heatmap-table th, .heatmap-table td, .batch-table th, .batch-table td {
+        padding: 6px 4px;
+    }
+    .page-header h1 {
+        font-size: 18px;
+    }
+    .page-header p {
+        font-size: 12px;
+    }
+    .lab-panel-title {
+        font-size: 14px;
+    }
+    .pliny-combo-filters {
+        flex-direction: column;
+    }
+    .api-key-grid {
+        grid-template-columns: 1fr;
+    }
+    .lab-disclaimer {
+        font-size: 12px;
+    }
+    .setup-step {
+        flex-direction: column;
+        gap: 4px;
+    }
+    .nav-links {
+        max-height: 60vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .batch-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+    .batch-stat-val {
+        font-size: 18px;
+    }
+    .batch-distribution {
+        height: 80px;
+    }
+    .batch-dist-label {
+        font-size: 7px;
+    }
+    .expert-input textarea, .lab-field input, .lab-field select {
+        font-size: 14px;
     }
 }
 
