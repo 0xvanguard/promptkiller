@@ -97,10 +97,10 @@ All 8 tests cover: initialization, categories, search, random selection, threat 
 
 ## 🌐 Web UI
 
-Interactive dashboard to visualize and explore all 501 attack prompts:
+Interactive dashboard to visualize and explore all 629 attack prompts:
 
 ```bash
-cd promptkiller/web
+cd promptkiller/docs
 python -m http.server 8080
 # Open http://localhost:8080
 ```
@@ -124,10 +124,15 @@ promptkiller/
 │   ├── prompts_batch3.py    # Batch 3: ~55 prompts
 │   ├── prompts_batch4.py    # Batch 4: ~28 prompts
 │   └── prompts_final.py     # Final batch: 14 prompts
+├── docs/
+│   ├── index.html           # Web UI (GitHub Pages)
+│   ├── app.js               # App logic (charts, scanner, browser, combiner, tester)
+│   ├── data.js              # Auto-generated 629-prompt dataset
+│   └── README.md            # Documentation
 ├── web/
-│   ├── index.html           # Web UI (6 pages)
+│   ├── index.html           # Legacy Web UI
 │   ├── style.css            # Dark theme styles
-│   ├── app.js               # App logic (charts, scanner, browser)
+│   ├── app.js               # App logic
 │   └── data.js              # Auto-generated 501-prompt dataset
 ├── tests/
 │   └── test_promptkiller.py # Test suite
