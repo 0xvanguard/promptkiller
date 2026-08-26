@@ -1601,10 +1601,13 @@ function runFuzzyAnalysis() {
         </div>`;
 
     // Weaknesses exploited
-    if (score.weaknesses_exploited.length > 0) {
+    const weaknesses = score.weaknesses || score.weaknesses_exploited || [];
+    if (weaknesses.length > 0) {
         html += '<div style="margin-top:12px"><h4>🎯 Weaknesses Exploited</h4>';
-        score.weaknesses_exploited.forEach(w => {
-            html += `<span class="tag tag-technique" style="margin:2px">${w.category} (${(w.strength * 100).toFixed(0)}%)</span>`;
+        weaknesses.forEach(w => {
+            const cat = w.category || w[0] || 'unknown';
+            const str = w.strength || w[1] || 0;
+            html += `<span class="tag tag-technique" style="margin:2px">${cat} (${(str * 100).toFixed(0)}%)</span>`;
         });
         html += '</div>';
     }
@@ -1623,19 +1626,29 @@ function runFuzzyAnalysis() {
 
     // Model-specific advice
     if (modelAdvice) {
+        const diff = modelAdvice.difficulty || modelAdvice.estimated_difficulty || {};
+        const diffLevel = diff.level || 'N/A';
+        const diffDesc = diff.desc || diff.description || '';
+        const attacks = modelAdvice.bestAttacks || modelAdvice.recommended_attacks || [];
+        const weakAreas = modelAdvice.weakAreas || modelAdvice.weak_areas || [];
+        const tips = modelAdvice.tips || [];
         html += `<div style="margin-top:16px;padding:12px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border)">
-            <h4>🛡️ ${modelAdvice.model} — ${modelAdvice.estimated_difficulty.level}</h4>
-            <p style="font-size:12px;color:var(--text-muted);margin:4px 0">${modelAdvice.estimated_difficulty.description}</p>
+            <h4>🛡️ ${modelAdvice.model} — ${diffLevel}</h4>
+            <p style="font-size:12px;color:var(--text-muted);margin:4px 0">${diffDesc}</p>
             <div style="margin-top:8px">
                 <strong style="font-size:12px">Best attacks:</strong>
-                ${modelAdvice.recommended_attacks.map(a => `<span class="tag tag-technique" style="margin:2px">${a}</span>`).join('')}
+                ${attacks.map(a => `<span class="tag tag-technique" style="margin:2px">${a}</span>`).join('')}
             </div>
             <div style="margin-top:8px">
                 <strong style="font-size:12px">Weak areas:</strong>
-                ${modelAdvice.weak_areas.map(w => `<span style="font-size:11px;color:${w.resistance < 0.5 ? '#ef4444' : '#f97316'};margin-right:8px">${w.category} (${(w.resistance * 100).toFixed(0)}%)</span>`).join('')}
+                ${weakAreas.map(w => {
+                    const cat = w.category || w[0] || 'unknown';
+                    const res = w.resistance || w[1] || 0;
+                    return `<span style="font-size:11px;color:${res < 0.5 ? '#ef4444' : '#f97316'};margin-right:8px">${cat} (${(res * 100).toFixed(0)}%)</span>`;
+                }).join('')}
             </div>
             <div style="margin-top:8px">
-                ${modelAdvice.tips.map(t => `<div style="font-size:12px;color:var(--text-secondary);margin:2px 0">${t}</div>`).join('')}
+                ${tips.map(t => `<div style="font-size:12px;color:var(--text-secondary);margin:2px 0">${t}</div>`).join('')}
             </div>
         </div>`;
     }
@@ -1646,7 +1659,7 @@ function runFuzzyAnalysis() {
             <div><strong>Words:</strong> ${score.metadata.word_count}</div>
             <div><strong>Code:</strong> ${score.metadata.has_code ? '✅' : '❌'}</div>
             <div><strong>Steps:</strong> ${score.metadata.has_steps ? '✅' : '❌'}</div>
-            <div><strong>Code Examples:</strong> ${score.metadata.has_code_examples ? '✅' : '❌'}</div>
+            <div><strong>Code Examples:</strong> ${(score.metadata.has_code_examples || score.metadata.has_code) ? '✅' : '❌'}</div>
             <div><strong>Both Versions:</strong> ${score.metadata.has_both_versions ? '✅' : '❌'}</div>
             <div><strong>Optimal Length:</strong> ${score.metadata.optimal_length ? '✅' : '❌'}</div>
         </div>
