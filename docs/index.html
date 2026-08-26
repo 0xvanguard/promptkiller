@@ -49,6 +49,10 @@
             <li onclick="window.open('results.html','_blank')">
                 <span class="nav-icon">🔬</span> Exhaustive Analysis
             </li>
+            <li data-page="lab">
+                <span class="nav-icon">🧪</span> Red Team Lab
+                <span class="nav-badge new">NEW</span>
+            </li>
         </ul>
         <div class="sidebar-footer">
             <div class="theme-toggle">
@@ -366,6 +370,138 @@
             </div>
         </section>
 
+        <!-- ═══════════════════════════════════════════════
+             RED TEAM LAB PAGE
+             ═══════════════════════════════════════════════ -->
+        <section class="page" id="page-lab">
+            <div class="page-header">
+                <h1>🧪 Red Team Lab — Strategy Generator & Live Testing</h1>
+                <p>Generate custom attack strategies, test against real AI models, and analyze vulnerabilities</p>
+            </div>
+
+            <!-- API Keys Configuration -->
+            <div class="lab-config-card" id="labConfig">
+                <div class="lab-config-header" onclick="toggleLabConfig()">
+                    <h3>🔑 API Configuration</h3>
+                    <span class="lab-config-toggle" id="configToggle">▼</span>
+                </div>
+                <div class="lab-config-body" id="labConfigBody">
+                    <div class="api-key-grid">
+                        <div class="api-key-item">
+                            <label>OpenAI API Key</label>
+                            <input type="password" id="apiKeyOpenAI" placeholder="sk-..." onchange="liveTester.setApiKey('openai', this.value)">
+                            <span class="api-status" id="statusOpenAI">Not configured</span>
+                        </div>
+                        <div class="api-key-item">
+                            <label>Anthropic API Key</label>
+                            <input type="password" id="apiKeyAnthropic" placeholder="sk-ant-..." onchange="liveTester.setApiKey('anthropic', this.value)">
+                            <span class="api-status" id="statusAnthropic">Not configured</span>
+                        </div>
+                        <div class="api-key-item">
+                            <label>OpenRouter API Key</label>
+                            <input type="password" id="apiKeyOpenRouter" placeholder="sk-or-..." onchange="liveTester.setApiKey('openrouter', this.value)">
+                            <span class="api-status" id="statusOpenRouter">Not configured</span>
+                        </div>
+                        <div class="api-key-item">
+                            <label>Ollama URL</label>
+                            <input type="text" id="apiKeyOllama" placeholder="http://localhost:11434" value="http://localhost:11434" onchange="liveTester.setApiKey('ollama', this.value)">
+                            <span class="api-status" id="statusOllama">Local (free)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Lab Grid -->
+            <div class="lab-grid">
+                <!-- Strategy Generator -->
+                <div class="lab-panel">
+                    <h3 class="lab-panel-title">🎯 Strategy Generator</h3>
+                    <div class="lab-form">
+                        <div class="lab-field">
+                            <label>Target Model</label>
+                            <select id="labTargetModel" onchange="updateLabPreview()">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div class="lab-field">
+                            <label>Attack Level</label>
+                            <select id="labLevel" onchange="updateLabPreview()">
+                                <option value="all">All Levels</option>
+                                <option value="1">Level 1 — Basic</option>
+                                <option value="2">Level 2 — Intermediate</option>
+                                <option value="3">Level 3 — Advanced</option>
+                                <option value="4">Level 4 — Expert</option>
+                            </select>
+                        </div>
+                        <div class="lab-field">
+                            <label>Target Topic (for chain attacks)</label>
+                            <input type="text" id="labTopic" placeholder="e.g., social engineering techniques" value="">
+                        </div>
+                        <div class="lab-actions">
+                            <button class="btn btn-primary" onclick="generateStrategies()">🎲 Generate Strategies</button>
+                            <button class="btn btn-secondary" onclick="generateAttackChain()">⛓️ Generate Attack Chain</button>
+                        </div>
+                    </div>
+
+                    <!-- Generated Strategies -->
+                    <div id="labStrategies" class="lab-strategies"></div>
+                </div>
+
+                <!-- Model Vulnerability Profile -->
+                <div class="lab-panel">
+                    <h3 class="lab-panel-title">🛡️ Model Vulnerability Profile</h3>
+                    <div id="labModelProfile" class="lab-model-profile">
+                        <div class="empty-state">
+                            <p>Select a model to see its vulnerability profile</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Testing Panel -->
+            <div class="lab-panel full-width">
+                <h3 class="lab-panel-title">🚀 Live Testing</h3>
+                <div class="lab-test-controls">
+                    <div class="lab-field">
+                        <label>Prompt to Test</label>
+                        <textarea id="labTestPrompt" rows="4" placeholder="Enter a prompt to test against models..."></textarea>
+                    </div>
+                    <div class="lab-field">
+                        <label>Test Against</label>
+                        <div class="lab-model-checkboxes" id="labModelCheckboxes">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <div class="lab-actions">
+                        <button class="btn btn-primary" id="labRunTest" onclick="runLiveTest()">▶️ Run Test</button>
+                        <button class="btn btn-secondary" id="labStopTest" onclick="stopLiveTest()" disabled>⏹️ Stop</button>
+                        <button class="btn btn-secondary" onclick="runBatchFromStrategies()">📦 Batch Test All Strategies</button>
+                    </div>
+                </div>
+
+                <!-- Test Progress -->
+                <div id="labTestProgress" style="display:none">
+                    <div class="lab-progress-bar">
+                        <div class="lab-progress-fill" id="labProgressFill"></div>
+                    </div>
+                    <div class="lab-progress-text" id="labProgressText">0%</div>
+                </div>
+
+                <!-- Test Results -->
+                <div id="labTestResults"></div>
+            </div>
+
+            <!-- Results Dashboard -->
+            <div class="lab-panel full-width">
+                <h3 class="lab-panel-title">📊 Results Dashboard</h3>
+                <div id="labResultsDashboard" class="lab-results-dashboard">
+                    <div class="empty-state">
+                        <p>Run tests to see results here</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- About Page -->
         <section class="page" id="page-about">
             <div class="page-header">
@@ -399,6 +535,7 @@
 
     <script src="data.js"></script>
     <script src="models.js"></script>
+    <script src="lab.js"></script>
     <script src="pages.js"></script>
     <script src="app.js"></script>
 </body>

@@ -63,6 +63,7 @@ function navigateTo(page) {
     if (page === 'model-arena') renderModelArena();
     if (page === 'harmbench') renderHarmBench();
     if (page === 'pliny') renderPlinyArsenal();
+    if (page === 'lab') initLab();
 }
 
 // --- Theme ---
@@ -745,6 +746,397 @@ function initAbout() {
                 </div>
             </div>`;
     });
+}
+
+// ================================================================
+// RED TEAM LAB
+// ================================================================
+let labInitialized = false;
+let labSelectedStrategies = [];
+let labSelectedModels = [];
+let labGeneratedStrategies = [];
+let labAttackChain = null;
+
+function initLab() {
+    if (labInitialized) return;
+    labInitialized = true;
+
+    // Populate model selector
+    const modelSelect = document.getElementById('labTargetModel');
+    modelSelect.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
+        `<option value="${id}">${m.icon} ${m.name} (${m.org})</option>`
+    ).join('');
+
+    // Populate model checkboxes for testing
+    const checkboxes = document.getElementById('labModelCheckboxes');
+    checkboxes.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
+        `<label class="lab-checkbox" onclick="toggleLabModel('${id}', this)">`+
+        `<input type="checkbox" value="${id}">`+
+        `${m.icon} ${m.name}</label>`
+    ).join('');
+
+    // Load saved API keys
+    ['openai', 'anthropic', 'openrouter'].forEach(provider => {
+        const saved = localStorage.getItem(`pk_api_${provider}`);
+        if (saved) {
+            document.getElementById(`apiKey${provider.charAt(0).toUpperCase() + provider.slice(1)}`).value = saved;
+            liveTester.setApiKey(provider, saved);
+        }
+    });
+
+    // Auto-select first model
+    updateLabPreview();
+}
+
+function toggleLabConfig() {
+    const body = document.getElementById('labConfigBody');
+    const toggle = document.getElementById('configToggle');
+    body.classList.toggle('open');
+    toggle.textContent = body.classList.contains('open') ? '▲' : '▼';
+}
+
+function toggleLabModel(id, el) {
+    const idx = labSelectedModels.indexOf(id);
+    if (idx > -1) {
+        labSelectedModels.splice(idx, 1);
+        el.classList.remove('checked');
+    } else {
+        labSelectedModels.push(id);
+        el.classList.add('checked');
+    }
+}
+
+function updateLabPreview() {
+    const modelId = document.getElementById('labTargetModel').value;
+    const model = TARGET_MODELS[modelId];
+    if (!model) return;
+
+    const profile = document.getElementById('labModelProfile');
+    const safety = model.safety_profile;
+    const sortedSafety = Object.entries(safety).sort((a, b) => a[1] - b[1]);
+
+    profile.innerHTML = `
+        <div class="lab-model-header">
+            <span class="lab-model-icon">${model.icon}</span>
+            <div>
+                <div class="lab-model-name">${model.name}</div>
+                <div class="lab-model-org">${model.org} • ${model.provider}</div>
+            </div>
+        </div>
+        <div class="lab-vuln-bars">
+            ${sortedSafety.map(([cat, score]) => {
+                const color = score < 0.4 ? '#ef4444' : score < 0.7 ? '#f97316' : score < 0.85 ? '#eab308' : '#22c55e';
+                return `
+                    <div class="lab-vuln-row">
+                        <span class="lab-vuln-label">${cat.replace(/_/g, ' ')}</span>
+                        <div class="lab-vuln-bar">
+                            <div class="lab-vuln-fill" style="width:${score*100}%;background:${color}"></div>
+                        </div>
+                        <span class="lab-vuln-value" style="color:${color}">${(score*100).toFixed(0)}%</span>
+                    </div>`;
+            }).join('')}
+        </div>
+        <div class="lab-weaknesses">
+            <h4>Known Weaknesses</h4>
+            ${model.known_weaknesses.map(w => `<span class="lab-weakness-tag">${w}</span>`).join('')}
+        </div>
+    `;
+}
+
+function generateStrategies() {
+    const modelId = document.getElementById('labTargetModel').value;
+    const level = document.getElementById('labLevel').value;
+
+    const strategies = strategyGenerator.generateForModel(modelId, {
+        level: level === 'all' ? 'all' : parseInt(level),
+        count: 8
+    });
+
+    labGeneratedStrategies = strategies;
+    labSelectedStrategies = [];
+
+    const container = document.getElementById('labStrategies');
+    if (strategies.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No strategies found for these filters</p></div>';
+        return;
+    }
+
+    container.innerHTML = strategies.map((s, i) => {
+        const levelClass = `l${s.level}`;
+        const successRate = (s.expected_success * 100).toFixed(0);
+        const successClass = successRate > 60 ? 'high' : successRate > 35 ? 'medium' : 'low';
+
+        return `
+            <div class="lab-strategy-card" onclick="selectLabStrategy(${i}, this)">
+                <div class="lab-strategy-header">
+                    <span class="lab-strategy-name">${s.name}</span>
+                    <span class="lab-strategy-level ${levelClass}">Level ${s.level}</span>
+                </div>
+                <div class="lab-strategy-desc">${s.description}</div>
+                <div class="lab-strategy-prompt">${escapeHtml(s.prompt || (s.turns ? s.turns.map(t => t.prompt).join(' → ') : ''))}</div>
+                <div class="lab-strategy-meta">
+                    <span>Category: ${s.category}</span>
+                    <span>Expected Success: <span class="lab-success-rate ${successClass}">${successRate}%</span></span>
+                </div>
+            </div>`;
+    }).join('') + `
+        <div style="margin-top:12px">
+            <button class="btn btn-primary" onclick="testAllStrategies()" style="width:100%">🚀 Test All Generated Strategies</button>
+        </div>`;
+}
+
+function selectLabStrategy(index, el) {
+    const idx = labSelectedStrategies.indexOf(index);
+    if (idx > -1) {
+        labSelectedStrategies.splice(idx, 1);
+        el.classList.remove('selected');
+    } else {
+        labSelectedStrategies.push(index);
+        el.classList.add('selected');
+    }
+}
+
+function generateAttackChain() {
+    const modelId = document.getElementById('labTargetModel').value;
+    const topic = document.getElementById('labTopic').value || 'social engineering techniques';
+
+    labAttackChain = strategyGenerator.generateAttackChain(modelId, topic, { maxLength: 5 });
+
+    const container = document.getElementById('labStrategies');
+    if (!labAttackChain) {
+        container.innerHTML = '<div class="empty-state"><p>Error generating attack chain</p></div>';
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="lab-attack-chain">
+            <h4 style="margin-bottom:16px">⛓️ Attack Chain for ${labAttackChain.model}</h4>
+            ${labAttackChain.chain.map((step, i) => `
+                <div class="lab-chain-step">
+                    <span class="lab-chain-num">${step.step}</span>
+                    <div class="lab-chain-content">
+                        <div class="lab-chain-type">${step.type.replace(/_/g, ' ')}</div>
+                        <div class="lab-chain-prompt">${escapeHtml(step.prompt)}</div>
+                        <div class="lab-chain-purpose">${step.purpose}</div>
+                    </div>
+                </div>
+                ${i < labAttackChain.chain.length - 1 ? '<div class="lab-chain-arrow">↓</div>' : ''}
+            `).join('')}
+            <div class="lab-chain-summary">
+                <h4>📊 Chain Analysis</h4>
+                <p style="font-size:13px;color:var(--text-secondary)">
+                    <strong>Estimated Success Rate:</strong> <span style="color:${labAttackChain.estimated_success > 0.5 ? '#ef4444' : labAttackChain.estimated_success > 0.3 ? '#f97316' : '#22c55e'}">${(labAttackChain.estimated_success * 100).toFixed(1)}%</span><br>
+                    <strong>Weak Areas Exploited:</strong> ${labAttackChain.weak_areas_exploited.map(a => `<span class="tag tag-technique">${a}</span>`).join(' ')}<br>
+                    <strong>Total Steps:</strong> ${labAttackChain.chain.length}
+                </p>
+                <button class="btn btn-primary" onclick="testAttackChain()" style="margin-top:12px">🚀 Test This Chain</button>
+            </div>
+        </div>`;
+}
+
+async function runLiveTest() {
+    const prompt = document.getElementById('labTestPrompt').value.trim();
+    if (!prompt) {
+        alert('Please enter a prompt to test');
+        return;
+    }
+    if (labSelectedModels.length === 0) {
+        alert('Please select at least one model to test against');
+        return;
+    }
+
+    document.getElementById('labRunTest').disabled = true;
+    document.getElementById('labStopTest').disabled = false;
+    document.getElementById('labTestProgress').style.display = 'block';
+
+    const results = [];
+    const total = labSelectedModels.length;
+
+    for (let i = 0; i < labSelectedModels.length; i++) {
+        const modelId = labSelectedModels[i];
+        const result = await liveTester.testPrompt(modelId, prompt);
+        results.push(result);
+
+        // Update progress
+        const pct = ((i + 1) / total * 100).toFixed(0);
+        document.getElementById('labProgressFill').style.width = pct + '%';
+        document.getElementById('labProgressText').textContent = `${pct}% — Testing ${TARGET_MODELS[modelId]?.name || modelId}...`;
+    }
+
+    document.getElementById('labRunTest').disabled = false;
+    document.getElementById('labStopTest').disabled = true;
+    document.getElementById('labProgressText').textContent = 'Complete!';
+
+    displayTestResults(results);
+}
+
+function stopLiveTest() {
+    liveTester.stop();
+    document.getElementById('labRunTest').disabled = false;
+    document.getElementById('labStopTest').disabled = true;
+    document.getElementById('labProgressText').textContent = 'Stopped';
+}
+
+async function testAllStrategies() {
+    if (labGeneratedStrategies.length === 0) return;
+    if (labSelectedModels.length === 0) {
+        alert('Please select at least one model to test against');
+        return;
+    }
+
+    document.getElementById('labRunTest').disabled = true;
+    document.getElementById('labStopTest').disabled = false;
+    document.getElementById('labTestProgress').style.display = 'block';
+
+    const prompts = labGeneratedStrategies.map(s => s.prompt).filter(Boolean);
+    const results = [];
+    const total = prompts.length * labSelectedModels.length;
+    let current = 0;
+
+    for (const prompt of prompts) {
+        for (const modelId of labSelectedModels) {
+            const result = await liveTester.testPrompt(modelId, prompt);
+            results.push(result);
+            current++;
+
+            const pct = (current / total * 100).toFixed(0);
+            document.getElementById('labProgressFill').style.width = pct + '%';
+            document.getElementById('labProgressText').textContent = `${pct}% — ${current}/${total}`;
+        }
+    }
+
+    document.getElementById('labRunTest').disabled = false;
+    document.getElementById('labStopTest').disabled = true;
+
+    displayTestResults(results);
+}
+
+async function testAttackChain() {
+    if (!labAttackChain) return;
+    if (labSelectedModels.length === 0) {
+        alert('Please select at least one model to test against');
+        return;
+    }
+
+    document.getElementById('labRunTest').disabled = true;
+    document.getElementById('labStopTest').disabled = false;
+    document.getElementById('labTestProgress').style.display = 'block';
+
+    const results = [];
+    const total = labAttackChain.chain.length * labSelectedModels.length;
+    let current = 0;
+
+    for (const step of labAttackChain.chain) {
+        for (const modelId of labSelectedModels) {
+            const result = await liveTester.testPrompt(modelId, step.prompt);
+            result.chain_step = step.step;
+            result.chain_type = step.type;
+            results.push(result);
+            current++;
+
+            const pct = (current / total * 100).toFixed(0);
+            document.getElementById('labProgressFill').style.width = pct + '%';
+            document.getElementById('labProgressText').textContent = `${pct}% — Step ${step.step}/${labAttackChain.chain.length}`;
+        }
+    }
+
+    document.getElementById('labRunTest').disabled = false;
+    document.getElementById('labStopTest').disabled = true;
+
+    displayTestResults(results);
+}
+
+async function runBatchFromStrategies() {
+    if (labGeneratedStrategies.length === 0) {
+        alert('Generate strategies first!');
+        return;
+    }
+    await testAllStrategies();
+}
+
+function displayTestResults(results) {
+    const analyzer = new ResultsAnalyzer(results);
+    const stats = analyzer.getOverallStats();
+    const modelStats = analyzer.getPerModelStats();
+    const recommendations = analyzer.getRecommendations();
+
+    // Stats grid
+    let html = `
+        <div class="lab-results-grid">
+            <div class="lab-result-stat">
+                <span class="lab-result-stat-val" style="color:var(--accent)">${stats.total_tests}</span>
+                <span class="lab-result-stat-label">Total Tests</span>
+            </div>
+            <div class="lab-result-stat">
+                <span class="lab-result-stat-val" style="color:#ef4444">${stats.bypasses}</span>
+                <span class="lab-result-stat-label">Bypasses</span>
+            </div>
+            <div class="lab-result-stat">
+                <span class="lab-result-stat-val" style="color:#22c55e">${stats.refusals}</span>
+                <span class="lab-result-stat-label">Refusals</span>
+            </div>
+            <div class="lab-result-stat">
+                <span class="lab-result-stat-val" style="color:${parseFloat(stats.bypass_rate) > 50 ? '#ef4444' : '#f97316'}">${stats.bypass_rate}%</span>
+                <span class="lab-result-stat-label">Bypass Rate</span>
+            </div>
+            <div class="lab-result-stat">
+                <span class="lab-result-stat-val">${stats.avg_latency}ms</span>
+                <span class="lab-result-stat-label">Avg Latency</span>
+            </div>
+        </div>`;
+
+    // Per-model breakdown
+    html += `<h4 style="margin-bottom:12px">📊 Per-Model Results</h4>`;
+    html += `<table class="threat-table"><thead><tr><th>Model</th><th>Tests</th><th>Bypasses</th><th>Refusals</th><th>Bypass Rate</th><th>Avg Latency</th></tr></thead><tbody>`;
+    for (const [id, s] of Object.entries(modelStats)) {
+        const rate = parseFloat(s.bypass_rate);
+        html += `<tr>
+            <td><strong>${s.model}</strong></td>
+            <td>${s.tests}</td>
+            <td style="color:#ef4444">${s.bypasses}</td>
+            <td style="color:#22c55e">${s.refusals}</td>
+            <td style="color:${rate > 50 ? '#ef4444' : rate > 30 ? '#f97316' : '#22c55e'}">${s.bypass_rate}%</td>
+            <td>${s.avgLatency}ms</td>
+        </tr>`;
+    }
+    html += `</tbody></table>`;
+
+    // Recommendations
+    if (recommendations.length > 0) {
+        html += `<div class="lab-recommendations"><h4 style="margin:20px 0 12px">💡 Recommendations</h4>`;
+        recommendations.forEach(r => {
+            html += `<div class="lab-recommendation ${r.severity}">
+                <strong>${r.model}:</strong> ${r.message}
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    // Individual results
+    html += `<h4 style="margin:24px 0 12px">📋 Individual Test Results</h4>`;
+    results.forEach(r => {
+        const badgeClass = r.analysis?.classification?.includes('bypass') ? 'bypass' :
+                          r.analysis?.classification?.includes('refusal') ? 'refusal' :
+                          r.analysis?.classification === 'partial' ? 'partial' :
+                          r.success ? 'unclear' : 'error';
+        
+        html += `
+            <div class="lab-result-card">
+                <div class="lab-result-header">
+                    <span class="lab-result-model">${r.model}</span>
+                    <span class="lab-result-badge ${badgeClass}">${r.analysis?.classification || 'error'}</span>
+                </div>
+                ${r.response ? `<div class="lab-result-response">${escapeHtml(r.response.substring(0, 500))}${r.response.length > 500 ? '...' : ''}</div>` : ''}
+                ${r.error ? `<div class="lab-result-response" style="color:#ef4444">Error: ${escapeHtml(r.error)}</div>` : ''}
+                <div class="lab-result-meta">
+                    <span>Latency: ${r.latency}ms</span>
+                    <span>Confidence: ${r.analysis?.confidence ? (r.analysis.confidence * 100).toFixed(0) + '%' : 'N/A'}</span>
+                    <span>Words: ${r.analysis?.word_count || 0}</span>
+                </div>
+            </div>`;
+    });
+
+    document.getElementById('labTestResults').innerHTML = html;
 }
 
 // --- Utilities ---
