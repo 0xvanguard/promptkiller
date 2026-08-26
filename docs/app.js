@@ -795,6 +795,25 @@ function initLab() {
         ).join('');
     }
 
+    // Populate expert model selectors
+    const evoModelSelect = document.getElementById('evoTargetModel');
+    if (evoModelSelect) {
+        evoModelSelect.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
+            `<option value="${id}">${m.icon} ${m.name}</option>`
+        ).join('');
+    }
+
+    // Populate comparison checkboxes
+    const compareCheckboxes = document.getElementById('compareModelCheckboxes');
+    if (compareCheckboxes) {
+        compareCheckboxes.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
+            `<label class="lab-checkbox" onclick="this.classList.toggle('checked')">
+                <input type="checkbox" value="${id}">
+                ${m.icon} ${m.name}
+            </label>`
+        ).join('');
+    }
+
     // Render Pliny combos
     renderPlinyCombos();
 }
@@ -1329,6 +1348,313 @@ function displayTestResults(results) {
     });
 
     document.getElementById('labTestResults').innerHTML = html;
+}
+
+// ================================================================
+// EXPERT MODE FUNCTIONS
+// ================================================================
+
+function switchExpertTab(tab) {
+    document.querySelectorAll('.expert-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.expert-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[onclick="switchExpertTab('${tab}')"]`).classList.add('active');
+    document.getElementById(`expert-${tab}`).classList.add('active');
+}
+
+// --- Fuzzy Analyzer ---
+function runFuzzyAnalysis() {
+    const input = document.getElementById('fuzzyInput').value.trim();
+    if (!input) return;
+
+    const analysis = fuzzyAnalyzer.analyze(input);
+    const container = document.getElementById('fuzzyResults');
+
+    const clsColors = { bypass: '#ef4444', refusal: '#22c55e', partial_compliance: '#eab308', likely_bypass: '#f97316', likely_refusal: '#14b8a6', mixed: '#8b5cf6', unclear: '#64748b', deflection: '#06b6d4', empty: '#64748b' };
+    const color = clsColors[analysis.classification] || '#64748b';
+
+    container.innerHTML = `
+        <div class="fuzzy-result-header" style="border-left: 4px solid ${color}">
+            <div class="fuzzy-classification" style="color:${color}">${analysis.classification.replace(/_/g, ' ').toUpperCase()}</div>
+            <div class="fuzzy-confidence">Confidence: ${(analysis.confidence * 100).toFixed(1)}%</div>
+        </div>
+        <div class="fuzzy-scores">
+            <h4>Signal Scores</h4>
+            <div class="fuzzy-score-bar">
+                <span>Refusal</span>
+                <div class="fuzzy-bar"><div class="fuzzy-bar-fill" style="width:${analysis.scores.refusal * 100}%;background:#22c55e"></div></div>
+                <span>${(analysis.scores.refusal * 100).toFixed(0)}%</span>
+            </div>
+            <div class="fuzzy-score-bar">
+                <span>Bypass</span>
+                <div class="fuzzy-bar"><div class="fuzzy-bar-fill" style="width:${analysis.scores.bypass * 100}%;background:#ef4444"></div></div>
+                <span>${(analysis.scores.bypass * 100).toFixed(0)}%</span>
+            </div>
+            <div class="fuzzy-score-bar">
+                <span>Partial</span>
+                <div class="fuzzy-bar"><div class="fuzzy-bar-fill" style="width:${analysis.scores.partial * 100}%;background:#eab308"></div></div>
+                <span>${(analysis.scores.partial * 100).toFixed(0)}%</span>
+            </div>
+            <div class="fuzzy-score-bar">
+                <span>Structural</span>
+                <div class="fuzzy-bar"><div class="fuzzy-bar-fill" style="width:${analysis.scores.structural * 100}%;background:#3b82f6"></div></div>
+                <span>${(analysis.scores.structural * 100).toFixed(0)}%</span>
+            </div>
+            <div class="fuzzy-score-bar">
+                <span>Technical</span>
+                <div class="fuzzy-bar"><div class="fuzzy-bar-fill" style="width:${Math.min(analysis.scores.technical * 10, 100)}%;background:#8b5cf6"></div></div>
+                <span>${analysis.scores.technical}</span>
+            </div>
+        </div>
+        <div class="fuzzy-metadata">
+            <h4>Metadata</h4>
+            <div class="fuzzy-meta-grid">
+                <div><strong>Words:</strong> ${analysis.metadata.word_count}</div>
+                <div><strong>Sentences:</strong> ${analysis.metadata.sentence_count}</div>
+                <div><strong>Avg Sentence Length:</strong> ${analysis.metadata.avg_sentence_length}</div>
+                <div><strong>Has Code:</strong> ${analysis.metadata.has_code ? '✅' : '❌'}</div>
+                <div><strong>Has Steps:</strong> ${analysis.metadata.has_steps ? '✅' : '❌'}</div>
+                <div><strong>Technical Content:</strong> ${analysis.metadata.has_technical_content ? '✅' : '❌'}</div>
+                <div><strong>Specific Details:</strong> ${analysis.metadata.has_specific_details ? '✅' : '❌'}</div>
+            </div>
+        </div>`;
+}
+
+function analyzeAllResults() {
+    // Analyze all stored test results
+    const container = document.getElementById('fuzzyResults');
+    container.innerHTML = '<p style="color:var(--text-muted)">Analyzing... (run tests first if empty)</p>';
+}
+
+// --- Evolution Engine ---
+let evoRunning = false;
+
+async function startEvolution() {
+    const seed = document.getElementById('evoSeedPrompt').value.trim();
+    const modelId = document.getElementById('evoTargetModel').value;
+    const generations = parseInt(document.getElementById('evoGenerations').value);
+    const popSize = parseInt(document.getElementById('evoPopulation').value);
+
+    if (!seed) { alert('Enter a seed prompt'); return; }
+
+    evoRunning = true;
+    document.getElementById('evoStartBtn').disabled = true;
+    document.getElementById('evoStopBtn').disabled = false;
+    document.getElementById('evoProgress').style.display = 'block';
+
+    // Initialize
+    evolutionEngine.reset();
+    evolutionEngine.initializePopulation(seed, popSize);
+
+    for (let gen = 0; gen < generations; gen++) {
+        if (!evoRunning) break;
+
+        // Evaluate
+        await evolutionEngine.evaluatePopulation(modelId, liveTester);
+
+        // Update progress
+        const pct = ((gen + 1) / generations * 100).toFixed(0);
+        document.getElementById('evoProgressFill').style.width = pct + '%';
+        document.getElementById('evoProgressText').textContent = `Generation ${gen + 1}/${generations} — Best fitness: ${evolutionEngine.getStats().max_fitness}`;
+
+        // Evolve
+        if (gen < generations - 1) evolutionEngine.evolve();
+    }
+
+    document.getElementById('evoStartBtn').disabled = false;
+    document.getElementById('evoStopBtn').disabled = true;
+
+    displayEvolutionResults();
+}
+
+function stopEvolution() {
+    evoRunning = false;
+    document.getElementById('evoStartBtn').disabled = false;
+    document.getElementById('evoStopBtn').disabled = true;
+}
+
+function displayEvolutionResults() {
+    const stats = evolutionEngine.getStats();
+    const best = evolutionEngine.getBestStrategies(5);
+    const container = document.getElementById('evoResults');
+
+    let html = `
+        <div class="evo-stats">
+            <div class="evo-stat"><span class="evo-stat-val">${stats.generation}</span><span>Generations</span></div>
+            <div class="evo-stat"><span class="evo-stat-val">${stats.population_size}</span><span>Population</span></div>
+            <div class="evo-stat"><span class="evo-stat-val" style="color:#22c55e">${stats.avg_fitness}</span><span>Avg Fitness</span></div>
+            <div class="evo-stat"><span class="evo-stat-val" style="color:#ef4444">${stats.max_fitness}</span><span>Max Fitness</span></div>
+        </div>
+        <h4 style="margin:16px 0 12px">🏆 Best Evolved Strategies</h4>`;
+
+    best.forEach((s, i) => {
+        const fitnessColor = s.fitness > 0.7 ? '#ef4444' : s.fitness > 0.3 ? '#f97316' : '#22c55e';
+        html += `
+            <div class="evo-strategy-card">
+                <div class="evo-strategy-header">
+                    <span class="evo-rank">#${i + 1}</span>
+                    <span class="evo-fitness" style="color:${fitnessColor}">${(s.fitness * 100).toFixed(0)}% fitness</span>
+                    <span class="evo-strategy-type">${s.strategy}</span>
+                </div>
+                <div class="evo-strategy-prompt">${escapeHtml(s.prompt)}</div>
+                <div class="evo-strategy-meta">
+                    <span>Gen: ${s.generation}</span>
+                    <span>Parent: ${s.parent}</span>
+                    <span>Result: ${s.lastResult || 'N/A'}</span>
+                </div>
+            </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+// --- Obfuscator ---
+function runObfuscation() {
+    const input = document.getElementById('obfInput').value.trim();
+    if (!input) return;
+
+    const obfuscated = promptObfuscator.autoObfuscate(input);
+    const container = document.getElementById('obfResults');
+
+    container.innerHTML = obfuscated.map(o => `
+        <div class="obf-card">
+            <div class="obf-header">
+                <span class="obf-technique">${o.technique}</span>
+                <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${o.obfuscated.replace(/'/g, "\\'").replace(/\n/g, '\\n')}').then(()=>alert('Copied!'))">📋 Copy</button>
+            </div>
+            <div class="obf-preview">${escapeHtml(o.obfuscated)}</div>
+        </div>`).join('');
+}
+
+function obfuscateAndTest() {
+    const input = document.getElementById('obfInput').value.trim();
+    if (!input) return;
+    runObfuscation();
+    // Auto-fill the test prompt with first obfuscation
+    const obfuscated = promptObfuscator.obfuscate(input, 'base64');
+    document.getElementById('labTestPrompt').value = obfuscated;
+}
+
+// --- Comparative Analysis ---
+function runComparison() {
+    const container = document.getElementById('compareResults');
+    const checkboxes = document.querySelectorAll('#compareModelCheckboxes .lab-checkbox.checked input');
+    const selectedModels = Array.from(checkboxes).map(cb => cb.value);
+
+    if (selectedModels.length < 2) {
+        container.innerHTML = '<p style="color:#ef4444">Select at least 2 models to compare</p>';
+        return;
+    }
+
+    // Simulate comparison using safety profiles
+    let html = '<h4 style="margin-bottom:16px">⚖️ Model Comparison</h4>';
+    html += '<table class="threat-table"><thead><tr><th>Model</th><th>Jailbreak</th><th>Injection</th><th>Roleplay</th><th>Encoding</th><th>Manipulation</th><th>Overall</th></tr></thead><tbody>';
+
+    const profiles = selectedModels.map(id => {
+        const model = TARGET_MODELS[id];
+        if (!model) return null;
+        const avg = Object.values(model.safety_profile).reduce((s, v) => s + v, 0) / Object.values(model.safety_profile).length;
+        return { id, ...model, avgSafety: avg };
+    }).filter(Boolean).sort((a, b) => a.avgSafety - b.avgSafety);
+
+    profiles.forEach(p => {
+        const s = p.safety_profile;
+        const color = v => v < 0.5 ? '#ef4444' : v < 0.7 ? '#f97316' : '#22c55e';
+        html += `<tr>
+            <td>${p.icon} <strong>${p.name}</strong></td>
+            <td style="color:${color(s.jailbreak)}">${(s.jailbreak*100).toFixed(0)}%</td>
+            <td style="color:${color(s.injection)}">${(s.injection*100).toFixed(0)}%</td>
+            <td style="color:${color(s.roleplay)}">${(s.roleplay*100).toFixed(0)}%</td>
+            <td style="color:${color(s.encoding)}">${(s.encoding*100).toFixed(0)}%</td>
+            <td style="color:${color(s.manipulation)}">${(s.manipulation*100).toFixed(0)}%</td>
+            <td style="color:${color(p.avgSafety)};font-weight:700">${(p.avgSafety*100).toFixed(0)}%</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+
+    // Weakest areas per model
+    html += '<h4 style="margin:20px 0 12px">🎯 Weakest Areas Per Model</h4>';
+    profiles.forEach(p => {
+        const weak = Object.entries(p.safety_profile).sort((a, b) => a[1] - b[1]).slice(0, 3);
+        html += `<div class="comparison-model">
+            <strong>${p.icon} ${p.name}</strong>
+            <div class="comparison-weak">
+                ${weak.map(([cat, score]) => `<span class="comparison-weak-tag" style="background:rgba(239,68,68,${0.1 + (1-score)*0.3})">${cat} (${(score*100).toFixed(0)}%)</span>`).join('')}
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+// --- Export Engine ---
+function exportResults(format) {
+    const container = document.getElementById('exportResults');
+    // Use stored results if available
+    const results = window._lastTestResults || [];
+
+    if (results.length === 0) {
+        container.innerHTML = '<p style="color:#ef4444">No test results to export. Run tests first!</p>';
+        return;
+    }
+
+    let content, filename, type;
+    switch (format) {
+        case 'json':
+            content = exportEngine.toJSON(results);
+            filename = `promptkiller-report-${Date.now()}.json`;
+            type = 'application/json';
+            break;
+        case 'csv':
+            content = exportEngine.toCSV(results);
+            filename = `promptkiller-report-${Date.now()}.csv`;
+            type = 'text/csv';
+            break;
+        case 'html':
+            content = exportEngine.toHTML(results);
+            filename = `promptkiller-report-${Date.now()}.html`;
+            type = 'text/html';
+            break;
+        case 'markdown':
+            content = exportEngine.toMarkdown(results);
+            filename = `promptkiller-report-${Date.now()}.md`;
+            type = 'text/markdown';
+            break;
+    }
+
+    exportEngine.download(content, filename, type);
+    container.innerHTML = `<p style="color:#22c55e">✅ Exported ${results.length} results as ${format.toUpperCase()}</p>`;
+}
+
+// --- Model Fingerprint ---
+function runFingerprint() {
+    const input = document.getElementById('fpInput').value.trim();
+    if (!input) return;
+
+    const result = modelFingerprinter.identify(input);
+    const container = document.getElementById('fpResults');
+
+    let html = '<h4 style="margin-bottom:12px">🔍 Model Identification</h4>';
+
+    if (result.identified) {
+        html += `<div class="fp-result">
+            <div class="fp-primary">
+                <span class="fp-family">${result.primary.family.toUpperCase()}</span>
+                <span class="fp-confidence">${(result.primary.confidence * 100).toFixed(0)}% confidence</span>
+            </div>
+            <div class="fp-candidates">
+                ${result.candidates.map(c => `
+                    <div class="fp-candidate">
+                        <span>${c.family}</span>
+                        <div class="fp-bar"><div class="fp-bar-fill" style="width:${c.confidence * 100}%"></div></div>
+                        <span>${(c.confidence * 100).toFixed(0)}%</span>
+                    </div>`).join('')}
+            </div>
+        </div>`;
+    } else {
+        html += '<p style="color:var(--text-muted)">Could not identify model family from this response.</p>';
+    }
+
+    container.innerHTML = html;
 }
 
 // --- Utilities ---

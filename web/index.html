@@ -492,6 +492,159 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════
+                 EXPERT MODE SECTION
+                 ═══════════════════════════════════════════════ -->
+            <div class="lab-panel full-width">
+                <h3 class="lab-panel-title">🔬 Expert Mode — Advanced Analysis & Evolution</h3>
+                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">
+                    Professional-grade tools: Fuzzy Response Analysis, Evolution Engine, Prompt Obfuscator, Comparative Analysis, Export Reports.
+                </p>
+
+                <!-- Expert Tabs -->
+                <div class="expert-tabs">
+                    <button class="expert-tab active" onclick="switchExpertTab('fuzzy')">🧠 Fuzzy Analyzer</button>
+                    <button class="expert-tab" onclick="switchExpertTab('evolution')">🧬 Evolution Engine</button>
+                    <button class="expert-tab" onclick="switchExpertTab('obfuscator')">🔐 Prompt Obfuscator</button>
+                    <button class="expert-tab" onclick="switchExpertTab('compare')">⚖️ Comparative</button>
+                    <button class="expert-tab" onclick="switchExpertTab('export')">📄 Export Reports</button>
+                    <button class="expert-tab" onclick="switchExpertTab('fingerprint')">🔍 Model Fingerprint</button>
+                </div>
+
+                <!-- Fuzzy Analyzer Tab -->
+                <div class="expert-content active" id="expert-fuzzy">
+                    <div class="expert-grid">
+                        <div class="expert-input">
+                            <label>Response to Analyze</label>
+                            <textarea id="fuzzyInput" rows="6" placeholder="Paste a model response to analyze its classification (bypass, refusal, partial)..."></textarea>
+                            <div class="lab-actions" style="margin-top:12px">
+                                <button class="btn btn-primary" onclick="runFuzzyAnalysis()">🧠 Analyze Response</button>
+                                <button class="btn btn-secondary" onclick="analyzeAllResults()">📊 Analyze All Test Results</button>
+                            </div>
+                        </div>
+                        <div class="expert-results" id="fuzzyResults">
+                            <div class="empty-state"><p>Paste a response and click Analyze</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evolution Engine Tab -->
+                <div class="expert-content" id="expert-evolution">
+                    <div class="expert-grid">
+                        <div class="expert-input">
+                            <label>Seed Prompt (starting point)</label>
+                            <textarea id="evoSeedPrompt" rows="4" placeholder="Enter a base prompt to evolve..."></textarea>
+                            <div class="expert-row">
+                                <div class="lab-field" style="flex:1">
+                                    <label>Target Model</label>
+                                    <select id="evoTargetModel">
+                                        <!-- Populated by JS -->
+                                    </select>
+                                </div>
+                                <div class="lab-field" style="flex:1">
+                                    <label>Generations</label>
+                                    <select id="evoGenerations">
+                                        <option value="3">3 (Quick)</option>
+                                        <option value="5" selected>5 (Standard)</option>
+                                        <option value="10">10 (Thorough)</option>
+                                    </select>
+                                </div>
+                                <div class="lab-field" style="flex:1">
+                                    <label>Population</label>
+                                    <select id="evoPopulation">
+                                        <option value="6">6 (Fast)</option>
+                                        <option value="8" selected>8 (Standard)</option>
+                                        <option value="12">12 (Diverse)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="lab-actions" style="margin-top:12px">
+                                <button class="btn btn-primary" id="evoStartBtn" onclick="startEvolution()">🧬 Start Evolution</button>
+                                <button class="btn btn-secondary" id="evoStopBtn" onclick="stopEvolution()" disabled>⏹️ Stop</button>
+                            </div>
+                            <div id="evoProgress" style="display:none">
+                                <div class="lab-progress-bar"><div class="lab-progress-fill" id="evoProgressFill"></div></div>
+                                <div class="lab-progress-text" id="evoProgressText">0%</div>
+                            </div>
+                        </div>
+                        <div class="expert-results" id="evoResults">
+                            <div class="empty-state"><p>Enter a seed prompt and start evolution</p></div>
+                        </div>
+                    </div>
+                    <div id="evoChart" style="display:none">
+                        <canvas id="evoFitnessChart" style="height:200px"></canvas>
+                    </div>
+                </div>
+
+                <!-- Obfuscator Tab -->
+                <div class="expert-content" id="expert-obfuscator">
+                    <div class="expert-grid">
+                        <div class="expert-input">
+                            <label>Prompt to Obfuscate</label>
+                            <textarea id="obfInput" rows="4" placeholder="Enter a prompt to obfuscate with multiple techniques..."></textarea>
+                            <div class="lab-actions" style="margin-top:12px">
+                                <button class="btn btn-primary" onclick="runObfuscation()">🔐 Obfuscate</button>
+                                <button class="btn btn-secondary" onclick="obfuscateAndTest()">🔐 + 🚀 Obfuscate & Test</button>
+                            </div>
+                        </div>
+                        <div class="expert-results" id="obfResults">
+                            <div class="empty-state"><p>Enter a prompt to obfuscate</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparative Tab -->
+                <div class="expert-content" id="expert-compare">
+                    <div class="expert-grid">
+                        <div class="expert-input">
+                            <label>Compare Models (select 2+ models)</label>
+                            <div class="lab-model-checkboxes" id="compareModelCheckboxes"></div>
+                            <div class="lab-actions" style="margin-top:12px">
+                                <button class="btn btn-primary" onclick="runComparison()">⚖️ Run Comparison</button>
+                            </div>
+                        </div>
+                        <div class="expert-results" id="compareResults">
+                            <div class="empty-state"><p>Select models and run comparison</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Tab -->
+                <div class="expert-content" id="expert-export">
+                    <div class="expert-grid">
+                        <div class="expert-input">
+                            <h4 style="margin-bottom:12px">Export Test Results</h4>
+                            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">Generate professional reports from your test results.</p>
+                            <div class="lab-actions">
+                                <button class="btn btn-primary" onclick="exportResults('json')">📥 Export JSON</button>
+                                <button class="btn btn-secondary" onclick="exportResults('csv')">📥 Export CSV</button>
+                                <button class="btn btn-secondary" onclick="exportResults('html')">📥 Export HTML Report</button>
+                                <button class="btn btn-secondary" onclick="exportResults('markdown')">📥 Export Markdown</button>
+                            </div>
+                        </div>
+                        <div class="expert-results" id="exportResults">
+                            <div class="empty-state"><p>Run tests first, then export results</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fingerprint Tab -->
+                <div class="expert-content" id="expert-fingerprint">
+                    <div class="expert-grid">
+                        <div class="expert-input">
+                            <label>Response to Fingerprint</label>
+                            <textarea id="fpInput" rows="4" placeholder="Paste a model response to identify which model family it belongs to..."></textarea>
+                            <div class="lab-actions" style="margin-top:12px">
+                                <button class="btn btn-primary" onclick="runFingerprint()">🔍 Identify Model</button>
+                            </div>
+                        </div>
+                        <div class="expert-results" id="fpResults">
+                            <div class="empty-state"><p>Paste a response to identify the model</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════
                  PLINY COMBOS SECTION
                  ═══════════════════════════════════════════════ -->
             <div class="lab-panel full-width">
@@ -580,6 +733,7 @@
     <script src="data.js"></script>
     <script src="models.js"></script>
     <script src="lab.js"></script>
+    <script src="lab_expert.js"></script>
     <script src="pliny_combos.js"></script>
     <script src="pages.js"></script>
     <script src="app.js"></script>
