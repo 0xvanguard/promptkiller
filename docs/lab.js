@@ -975,6 +975,157 @@ class LiveTester {
         this.isRunning = false;
     }
 
+    // Multi-turn testing: sends steps sequentially with conversation history
+    async testMultiTurn(modelId, steps, options = {}) {
+        const model = TARGET_MODELS[modelId];
+        if (!model) throw new Error(`Unknown model: ${modelId}`);
+
+        const { temperature = 0.7, maxTokens = 500, onStep = null } = options;
+        const conversationHistory = [];
+        const results = [];
+
+        for (let i = 0; i < steps.length; i++) {
+            if (!this.isRunning) break;
+
+            const step = steps[i];
+            const startTime = Date.now();
+
+            try {
+                // Build messages array with full conversation history
+                const messages = [
+                    ...conversationHistory,
+                    { role: 'user', content: step.prompt }
+                ];
+
+                let response;
+                switch (model.provider) {
+                    case 'openai':
+                        response = await this.callOpenAI(model, step.prompt, '', temperature, maxTokens);
+                        break;
+                    case 'anthropic':
+                        response = await this.callAnthropicMultiTurn(model, messages, temperature, maxTokens);
+                        break;
+                    case 'openrouter':
+                        response = await this.callOpenRouterMultiTurn(model, messages, temperature, maxTokens);
+                        break;
+                    case 'ollama':
+                        response = await this.callOllamaMultiTurn(model, messages, temperature, maxTokens);
+                        break;
+                    default:
+                        throw new Error(`Unsupported provider: ${model.provider}`);
+                }
+
+                const latency = Date.now() - startTime;
+                const analysis = this.analyzeResponse(response, step.prompt);
+
+                // Add to conversation history
+                conversationHistory.push({ role: 'user', content: step.prompt });
+                conversationHistory.push({ role: 'assistant', content: response });
+
+                const result = {
+                    model: model.name,
+                    modelId,
+                    step: step.step,
+                    stepType: step.type,
+                    prompt: step.prompt,
+                    response,
+                    latency,
+                    analysis,
+                    timestamp: new Date().toISOString(),
+                    success: true,
+                    conversationLength: conversationHistory.length
+                };
+
+                results.push(result);
+
+                if (onStep) onStep(result, i + 1, steps.length);
+
+            } catch (error) {
+                results.push({
+                    model: model.name,
+                    modelId,
+                    step: step.step,
+                    stepType: step.type,
+                    prompt: step.prompt,
+                    error: error.message,
+                    latency: Date.now() - startTime,
+                    timestamp: new Date().toISOString(),
+                    success: false
+                });
+            }
+
+            // Rate limit between turns
+            await new Promise(r => setTimeout(r, 800));
+        }
+
+        return results;
+    }
+
+    // Multi-turn API methods
+    async callAnthropicMultiTurn(model, messages, temperature, maxTokens) {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': this.apiKeys.anthropic,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+            },
+            body: JSON.stringify({
+                model: model.api_model,
+                max_tokens: maxTokens,
+                temperature,
+                messages: messages.map(m => ({ role: m.role, content: m.content }))
+            })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(`Anthropic API error: ${err.error?.message || response.statusText}`);
+        }
+        const data = await response.json();
+        return data.content[0].text;
+    }
+
+    async callOpenRouterMultiTurn(model, messages, temperature, maxTokens) {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.apiKeys.openrouter}`,
+                'HTTP-Referer': 'https://promptkiller.dev',
+                'X-Title': 'PromptKiller Red Team Lab'
+            },
+            body: JSON.stringify({
+                model: model.api_model,
+                messages,
+                temperature,
+                max_tokens: maxTokens
+            })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(`OpenRouter API error: ${err.error?.message || response.statusText}`);
+        }
+        const data = await response.json();
+        return data.choices[0].message.content;
+    }
+
+    async callOllamaMultiTurn(model, messages, temperature, maxTokens) {
+        const response = await fetch(`${this.apiKeys.ollama}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: model.api_model,
+                messages,
+                options: { temperature, num_predict: maxTokens },
+                stream: false
+            })
+        });
+        if (!response.ok) throw new Error(`Ollama error: ${response.statusText}`);
+        const data = await response.json();
+        return data.message.content;
+    }
+
     // Analyze if response indicates bypass or refusal
     analyzeResponse(response, originalPrompt) {
         const lower = response.toLowerCase();

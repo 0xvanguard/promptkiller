@@ -2355,6 +2355,135 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
+   MULTI-TURN CHAT
+   ═══════════════════════════════════════════════ */
+
+.multi-turn-container {
+    margin-top: 16px;
+}
+
+.multi-turn-status {
+    padding: 10px 16px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    border-left: 3px solid var(--accent);
+}
+
+.multi-turn-chat {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.chat-message {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    max-width: 90%;
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+}
+
+.chat-message.model {
+    align-self: flex-start;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+}
+
+.chat-message.model.error {
+    border-color: rgba(239,68,68,0.3);
+}
+
+.chat-role {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+}
+
+.chat-type {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(139,92,246,0.15);
+    color: #a78bfa;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.chat-badge {
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.chat-badge.bypass { background: rgba(239,68,68,0.15); color: #ef4444; }
+.chat-badge.refusal { background: rgba(34,197,94,0.15); color: #22c55e; }
+.chat-badge.partial { background: rgba(234,179,8,0.15); color: #eab308; }
+
+.chat-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.chat-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+.multi-turn-summary {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.multi-turn-summary h4 {
+    margin-bottom: 12px;
+}
+
+.multi-turn-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.multi-turn-stat {
+    text-align: center;
+    padding: 12px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+}
+
+.multi-turn-stat span:last-child {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════
    PLINY COMBOS
    ═══════════════════════════════════════════════ */
 

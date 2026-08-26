@@ -1176,32 +1176,89 @@ async function testAttackChain() {
         return;
     }
 
+    // Use first selected model for multi-turn
+    const modelId = labSelectedModels[0];
+    const model = TARGET_MODELS[modelId];
+
     document.getElementById('labRunTest').disabled = true;
     document.getElementById('labStopTest').disabled = false;
     document.getElementById('labTestProgress').style.display = 'block';
 
-    const results = [];
-    const total = labAttackChain.chain.length * labSelectedModels.length;
-    let current = 0;
+    // Create conversation display
+    const container = document.getElementById('labTestResults');
+    container.innerHTML = `
+        <div class="multi-turn-container">
+            <h4 style="margin-bottom:12px">🎭 Multi-Turn Conversation — ${model.icon} ${model.name}</h4>
+            <div class="multi-turn-status" id="multiTurnStatus">Starting conversation...</div>
+            <div class="multi-turn-chat" id="multiTurnChat"></div>
+            <div id="multiTurnResults"></div>
+        </div>`;
 
-    for (const step of labAttackChain.chain) {
-        for (const modelId of labSelectedModels) {
-            const result = await liveTester.testPrompt(modelId, step.prompt);
-            result.chain_step = step.step;
-            result.chain_type = step.type;
-            results.push(result);
-            current++;
+    const chatEl = document.getElementById('multiTurnChat');
+    const statusEl = document.getElementById('multiTurnStatus');
 
-            const pct = (current / total * 100).toFixed(0);
+    // Test multi-turn with real-time updates
+    liveTester.isRunning = true;
+    const results = await liveTester.testMultiTurn(modelId, labAttackChain.chain, {
+        onStep: (result, stepNum, totalSteps) => {
+            const pct = (stepNum / totalSteps * 100).toFixed(0);
             document.getElementById('labProgressFill').style.width = pct + '%';
-            document.getElementById('labProgressText').textContent = `${pct}% — Step ${step.step}/${labAttackChain.chain.length}`;
+            document.getElementById('labProgressText').textContent = `Step ${stepNum}/${totalSteps} — ${result.stepType}`;
+            statusEl.textContent = `Step ${stepNum}/${totalSteps}: ${result.stepType.replace(/_/g, ' ')} — ${result.analysis?.classification || 'processing...'}`;
+
+            // Add user message
+            chatEl.innerHTML += `
+                <div class="chat-message user">
+                    <div class="chat-role">👤 You (Step ${result.step})</div>
+                    <div class="chat-type">${result.stepType.replace(/_/g, ' ')}</div>
+                    <div class="chat-text">${escapeHtml(result.prompt)}</div>
+                </div>`;
+
+            // Add model response
+            if (result.response) {
+                const badgeClass = result.analysis?.is_bypass ? 'bypass' :
+                                  result.analysis?.is_refusal ? 'refusal' : 'partial';
+                chatEl.innerHTML += `
+                    <div class="chat-message model">
+                        <div class="chat-role">${model.icon} ${model.name} <span class="chat-badge ${badgeClass}">${result.analysis?.classification || 'unknown'}</span></div>
+                        <div class="chat-text">${escapeHtml(result.response)}</div>
+                        <div class="chat-meta">
+                            <span>${result.latency}ms</span>
+                            <span>Confidence: ${(result.analysis?.confidence * 100 || 0).toFixed(0)}%</span>
+                        </div>
+                    </div>`;
+            } else {
+                chatEl.innerHTML += `
+                    <div class="chat-message model error">
+                        <div class="chat-role">${model.icon} ${model.name}</div>
+                        <div class="chat-text" style="color:#ef4444">Error: ${result.error}</div>
+                    </div>`;
+            }
+
+            chatEl.scrollTop = chatEl.scrollHeight;
         }
-    }
+    });
 
     document.getElementById('labRunTest').disabled = false;
     document.getElementById('labStopTest').disabled = true;
+    statusEl.textContent = 'Conversation complete!';
 
-    displayTestResults(results);
+    // Show final analysis
+    const resultsEl = document.getElementById('multiTurnResults');
+    const bypasses = results.filter(r => r.analysis?.is_bypass).length;
+    const refusals = results.filter(r => r.analysis?.is_refusal).length;
+    const total = results.length;
+
+    resultsEl.innerHTML = `
+        <div class="multi-turn-summary">
+            <h4>📊 Conversation Analysis</h4>
+            <div class="multi-turn-stats">
+                <div class="multi-turn-stat"><span style="color:#ef4444;font-size:24px;font-weight:700">${bypasses}</span><span>Bypasses</span></div>
+                <div class="multi-turn-stat"><span style="color:#22c55e;font-size:24px;font-weight:700">${refusals}</span><span>Refusals</span></div>
+                <div class="multi-turn-stat"><span style="color:#eab308;font-size:24px;font-weight:700">${total}</span><span>Total Steps</span></div>
+                <div class="multi-turn-stat"><span style="color:${bypasses > refusals ? '#ef4444' : '#22c55e'};font-size:24px;font-weight:700">${total > 0 ? (bypasses / total * 100).toFixed(0) : 0}%</span><span>Bypass Rate</span></div>
+            </div>
+        </div>`;
 }
 
 async function runBatchFromStrategies() {
