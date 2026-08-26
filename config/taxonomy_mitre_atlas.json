@@ -1,0 +1,310 @@
+{
+    "_meta": {
+        "version": "1.0.0",
+        "description": "Institutional taxonomy mapping for PromptKiller Enterprise",
+        "frameworks": ["MITRE ATLAS v4.0", "NIST AI RMF (AI 600-1)", "OWASP LLM Top 10 2025", "CVSS v3.1"],
+        "generated": "2026-08-26"
+    },
+    "category_mapping": {
+        "role_play": {
+            "intent_category": "PERSONA_MANIPULATION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0051",
+                "subtechnique": "AML.T0051.001",
+                "technique_name": "LLM Prompt Injection (Via Roleplay)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 6.5,
+            "severity_label": "MEDIUM",
+            "deterministic_rubric": "EVAL_PERSONA_SWITCH_DETECTION",
+            "description": "Attempts to make the model adopt a persona that bypasses safety constraints"
+        },
+        "encoding": {
+            "intent_category": "FORMAT_POISONING_ENCODING",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0059",
+                "subtechnique": "AML.T0059.001",
+                "technique_name": "LLM Token Smuggling"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 7.0,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_ENCODING_OBFUSCATION",
+            "description": "Uses encoding (Base64, hex, Unicode) to hide malicious instructions from filters"
+        },
+        "injection": {
+            "intent_category": "DIRECT_PROMPT_INJECTION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0051",
+                "technique": "AML.T0051",
+                "subtechnique": "AML.T0051.000",
+                "technique_name": "LLM Prompt Injection (Direct)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 8.5,
+            "severity_label": "CRITICAL",
+            "deterministic_rubric": "EVAL_INJECTION_PATTERN_MATCH",
+            "description": "Direct injection of malicious instructions into LLM prompts"
+        },
+        "jailbreak": {
+            "intent_category": "SAFETY_BYPASS",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0054",
+                "subtechnique": "AML.T0054.000",
+                "technique_name": "LLM Jailbreak"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 8.0,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_JAILBREAK_TRIGGER_DETECTION",
+            "description": "Attempts to bypass LLM safety controls to generate restricted content"
+        },
+        "manipulation": {
+            "intent_category": "EMOTIONAL_SOCIAL_ENGINEERING",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0048",
+                "subtechnique": "AML.T0048.001",
+                "technique_name": "LLM Prompt Hallucination Induction"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM09:2025-Overreliance",
+            "severity_cvss": 6.0,
+            "severity_label": "MEDIUM",
+            "deterministic_rubric": "EVAL_EMOTIONAL_MANIPULATION",
+            "description": "Uses emotional urgency, threats, or social pressure to bypass safety"
+        },
+        "context": {
+            "intent_category": "CONTEXT_MANIPULATION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0051",
+                "subtechnique": "AML.T0051.002",
+                "technique_name": "LLM Prompt Injection (Indirect)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 7.0,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_CONTEXT_POISONING",
+            "description": "Manipulates conversation context to alter model behavior"
+        },
+        "agentic": {
+            "intent_category": "AGENT_ABUSE",
+            "mitre_atlas": {
+                "tactic": "AML.TA0058",
+                "technique": "AML.T0058",
+                "subtechnique": "AML.T0058.000",
+                "technique_name": "LLM Goal Hijacking"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM08:2025-Excessive-Agency",
+            "severity_cvss": 8.5,
+            "severity_label": "CRITICAL",
+            "deterministic_rubric": "EVAL_AGENT_PRIVILEGE_ESCALATION",
+            "description": "Abuses AI agent capabilities, tool calling, or autonomous actions"
+        },
+        "tool_abuse": {
+            "intent_category": "TOOL_FUNCTION_MISUSE",
+            "mitre_atlas": {
+                "tactic": "AML.TA0058",
+                "technique": "AML.T0058",
+                "subtechnique": "AML.T0058.001",
+                "technique_name": "LLM Goal Hijacking (Tool Abuse)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM07:2025-Insecure-Plugin-Design",
+            "severity_cvss": 8.0,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_TOOL_MISUSE_DETECTION",
+            "description": "Abuses tool/function calling capabilities for unauthorized actions"
+        },
+        "meta": {
+            "intent_category": "SYSTEM_PROMPT_EXTRACTION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0057",
+                "technique": "AML.T0057",
+                "subtechnique": "AML.T0057.000",
+                "technique_name": "LLM Data Exfiltration"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM06:2025-Sensitive-Information-Disclosure",
+            "severity_cvss": 7.5,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_PROMPT_EXTRACTION_ATTEMPT",
+            "description": "Attempts to extract system prompts, rules, or configuration"
+        },
+        "extraction": {
+            "intent_category": "DATA_EXFILTRATION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0057",
+                "technique": "AML.T0057",
+                "subtechnique": "AML.T0057.001",
+                "technique_name": "LLM Training Data Extraction"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM06:2025-Sensitive-Information-Disclosure",
+            "severity_cvss": 8.0,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_DATA_LEAK_DETECTION",
+            "description": "Attempts to extract training data, PII, or confidential information"
+        },
+        "token_smuggling": {
+            "intent_category": "FORMAT_POISONING_UNICODE",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0059",
+                "subtechnique": "AML.T0059.002",
+                "technique_name": "LLM Token Smuggling (Unicode)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 7.0,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_UNICODE_SMOGLING",
+            "description": "Uses Unicode tricks, zero-width characters, or steganography"
+        },
+        "reasoning": {
+            "intent_category": "LOGIC_MANIPULATION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0048",
+                "technique": "AML.T0048",
+                "subtechnique": "AML.T0048.002",
+                "technique_name": "LLM Prompt Hallucination (Logic Chain)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM09:2025-Overreliance",
+            "severity_cvss": 6.5,
+            "severity_label": "MEDIUM",
+            "deterministic_rubric": "EVAL_LOGIC_CHAIN_MANIPULATION",
+            "description": "Manipulates model reasoning through logical fallacies or false premises"
+        },
+        "multi_turn": {
+            "intent_category": "GRADUAL_ESCALATION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0051",
+                "technique": "AML.T0051",
+                "subtechnique": "AML.T0051.003",
+                "technique_name": "LLM Prompt Injection (Multi-turn)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 7.5,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_MULTI_TURN_ESCALATION",
+            "description": "Gradually escalates from safe to restricted topics across turns"
+        },
+        "multilingual": {
+            "intent_category": "LANGUAGE_CONFUSION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0043",
+                "subtechnique": "AML.T0043.001",
+                "technique_name": "Craft Adversarial Data (Multilingual)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 6.0,
+            "severity_label": "MEDIUM",
+            "deterministic_rubric": "EVAL_MULTILINGUAL_CONFUSION",
+            "description": "Uses multiple languages or code-switching to confuse safety filters"
+        },
+        "persona": {
+            "intent_category": "IDENTITY_MANIPULATION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0051",
+                "subtechnique": "AML.T0051.001",
+                "technique_name": "LLM Prompt Injection (Persona)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 6.5,
+            "severity_label": "MEDIUM",
+            "deterministic_rubric": "EVAL_PERSONA_OVERRIDE",
+            "description": "Attempts to override model identity or assign unauthorized personas"
+        },
+        "rag": {
+            "intent_category": "RETRIEVAL_POISONING",
+            "mitre_atlas": {
+                "tactic": "AML.TA0055",
+                "technique": "AML.T0055",
+                "subtechnique": "AML.T0055.001",
+                "technique_name": "LLM Supply Chain Attack (RAG)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM05:2025-Supply-Chain-Vulnerabilities",
+            "severity_cvss": 7.5,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_RAG_POISONING",
+            "description": "Poisons or manipulates retrieval-augmented generation sources"
+        },
+        "adversarial": {
+            "intent_category": "ADVERSARIAL_INPUT",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0043",
+                "subtechnique": "AML.T0043.000",
+                "technique_name": "Craft Adversarial Data"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM04:2025-Model-Denial-of-Service",
+            "severity_cvss": 7.0,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_ADVERSARIAL_PERTURBATION",
+            "description": "Crafted inputs designed to cause model misclassification or failure"
+        },
+        "multimodal": {
+            "intent_category": "MULTIMODAL_ATTACK",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0043",
+                "subtechnique": "AML.T0043.002",
+                "technique_name": "Craft Adversarial Data (Multimodal)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM01:2025-Prompt-Injection",
+            "severity_cvss": 7.5,
+            "severity_label": "HIGH",
+            "deterministic_rubric": "EVAL_MULTIMODAL_INJECTION",
+            "description": "Attacks using image, audio, or combined modality inputs"
+        },
+        "supply_chain": {
+            "intent_category": "SUPPLY_CHAIN_ATTACK",
+            "mitre_atlas": {
+                "tactic": "AML.TA0055",
+                "technique": "AML.T0055",
+                "subtechnique": "AML.T0055.000",
+                "technique_name": "LLM Supply Chain Attack"
+            },
+            "nist_ai_rmf": "MANAGE-1.1",
+            "owasp_llm": "LLM05:2025-Supply-Chain-Vulnerabilities",
+            "severity_cvss": 9.0,
+            "severity_label": "CRITICAL",
+            "deterministic_rubric": "EVAL_SUPPLY_CHAIN_INTEGRITY",
+            "description": "Compromises model supply chain, dependencies, or training data"
+        },
+        "eval_gaming": {
+            "intent_category": "EVALUATION_MANIPULATION",
+            "mitre_atlas": {
+                "tactic": "AML.TA0043",
+                "technique": "AML.T0048",
+                "subtechnique": "AML.T0048.003",
+                "technique_name": "LLM Prompt Hallucination (Eval Gaming)"
+            },
+            "nist_ai_rmf": "MEASURE-2.3",
+            "owasp_llm": "LLM09:2025-Overreliance",
+            "severity_cvss": 5.5,
+            "severity_label": "LOW",
+            "deterministic_rubric": "EVAL_BENCHMARK_GAMING",
+            "description": "Manipulates evaluation benchmarks or test suites"
+        }
+    }
+}
