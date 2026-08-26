@@ -550,6 +550,7 @@
                     <button class="expert-tab" onclick="switchExpertTab('compare')">⚖️ Comparative</button>
                     <button class="expert-tab" onclick="switchExpertTab('export')">📄 Export Reports</button>
                     <button class="expert-tab" onclick="switchExpertTab('fingerprint')">🔍 Model Fingerprint</button>
+                    <button class="expert-tab" onclick="switchExpertTab('enterprise')">🏛️ Enterprise</button>
                     <button class="expert-tab" onclick="switchExpertTab('batch')">📊 Batch Analysis</button>
                 </div>
 
@@ -686,6 +687,37 @@
                 </div>
 
                 <!-- Batch Analysis Tab -->
+                <!-- Enterprise Dashboard Tab -->
+                <div class="expert-content" id="expert-enterprise">
+                    <div class="expert-grid" style="grid-template-columns:1fr">
+                        <div class="expert-input">
+                            <label>Enterprise Compliance Dashboard</label>
+                            <p style="color:var(--text-secondary);font-size:12px;margin-bottom:12px">
+                                Maps test results to MITRE ATLAS, NIST AI RMF, OWASP LLM Top 10, and ISO/IEC 42001.<br>
+                                Run Batch Analysis first, then click Analyze Compliance to generate enterprise-grade mapping.
+                            </p>
+                            <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                                <button class="btn btn-primary" onclick="analyzeCompliance()">🏛️ Analyze Compliance</button>
+                                <button class="btn btn-secondary" onclick="exportSARIF()">📦 Export SARIF</button>
+                                <button class="btn btn-secondary" onclick="exportJSON()">📄 Export JSON</button>
+                                <div class="lab-field" style="min-width:160px">
+                                    <label>User Role</label>
+                                    <select id="enterpriseRole" onchange="RBAC.setCurrentRole(this.value)">
+                                        <option value="auditor">Auditor (Full Access)</option>
+                                        <option value="red_teamer">Red Teamer</option>
+                                        <option value="compliance_officer">Compliance Officer</option>
+                                        <option value="viewer">Viewer (Read-Only)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="enterpriseResults">
+                            <div class="empty-state"><p>Run Batch Analysis first, then click Analyze Compliance</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Analysis Tab -->
                 <div class="expert-content" id="expert-batch">
                     <div class="expert-grid" style="grid-template-columns:1fr">
                         <div class="expert-input">
@@ -816,6 +848,7 @@
     <script src="models.js"></script>
     <script src="lab.js"></script>
     <script src="platforms.js"></script>
+    <script src="compliance.js"></script>
     <script src="lab_expert.js"></script>
     <script src="pliny_combos.js"></script>
     <script src="pages.js"></script>

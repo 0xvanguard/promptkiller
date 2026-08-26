@@ -2341,6 +2341,176 @@ function showBatchModal(name, category, technique, prompt, success, bypass, refu
     modal.style.display = 'flex';
 }
 
+// --- Enterprise Compliance Dashboard ---
+function analyzeCompliance() {
+    if (!batchAllResults || batchAllResults.length === 0) {
+        alert('Run Batch Analysis first to analyze compliance.');
+        return;
+    }
+
+    const role = RBAC.getCurrentRole();
+    if (!role.canViewCompliance) {
+        alert('Your role (' + role.name + ') does not have permission to view compliance data.');
+        return;
+    }
+
+    const results = batchAllResults;
+    const container = document.getElementById('enterpriseResults');
+
+    // Generate all compliance mappings
+    const mitreSummary = MITRE_ATLAS.generateSummary(results);
+    const nistAssessment = NIST_AI_RMF.mapResults(results);
+    const owaspResults = OWASP_LLM_TOP10.mapResults(results);
+    const isoAssessment = ISO_42001.assessFromResults(results);
+    const riskMatrix = AdvancedMetrics.generateRiskMatrix(results);
+    const asr = AdvancedMetrics.calculateASR(results);
+    const robustness = AdvancedMetrics.calculateRobustnessScore(results);
+    const categoryASR = AdvancedMetrics.calculateCategoryASR(results);
+
+    let html = '';
+
+    // === Executive Summary ===
+    html += '<div class="batch-section"><h4>🏛️ Executive Summary — AI Assurance & Compliance</h4>';
+    html += '<div class="batch-summary">';
+    html += '<div class="batch-stat"><span class="batch-stat-val" style="color:' + (asr > 0.5 ? '#ef4444' : '#22c55e') + '">' + (asr * 100).toFixed(1) + '%</span><span>Overall ASR</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val" style="color:' + (robustness > 60 ? '#22c55e' : robustness > 40 ? '#f97316' : '#ef4444') + '">' + robustness.toFixed(0) + '</span><span>Robustness Score</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + mitreSummary.totalTechniques + '</span><span>MITRE Techniques Hit</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val" style="color:' + (owaspResults.summary.categoriesVulnerable === 0 ? '#22c55e' : '#ef4444') + '">' + owaspResults.summary.categoriesVulnerable + '/10</span><span>OWASP LLM Vuln.</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + mitreSummary.coveragePercent + '%</span><span>ATLAS Coverage</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + results.length + '</span><span>Total Tests</span></div>';
+    html += '</div></div>';
+
+    // === Risk Matrix ===
+    html += '<div class="batch-section"><h4>📊 Risk Matrix (Probability × Impact)</h4>';
+    html += '<table class="batch-table"><thead><tr><th>Category</th><th>Probability (ASR)</th><th>Impact</th><th>Risk Score</th><th>Level</th></tr></thead><tbody>';
+    riskMatrix.forEach(r => {
+        const riskColor = r.riskLevel === 'critical' ? '#ef4444' : r.riskLevel === 'high' ? '#f97316' : r.riskLevel === 'medium' ? '#eab308' : '#22c55e';
+        html += '<tr><td><strong>' + r.category.replace(/_/g, ' ') + '</strong></td>';
+        html += '<td>' + (r.probability * 100).toFixed(1) + '%</td>';
+        html += '<td>' + r.impact + '/5</td>';
+        html += '<td style="color:' + riskColor + ';font-weight:700">' + r.riskScore.toFixed(0) + '</td>';
+        html += '<td><span style="color:' + riskColor + ';font-weight:600;text-transform:uppercase">' + r.riskLevel + '</span></td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // === MITRE ATLAS ===
+    html += '<div class="batch-section"><h4>🎯 MITRE ATLAS Mapping</h4>';
+    html += '<div class="batch-summary">';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + mitreSummary.criticalFindings + '</span><span>Critical</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + mitreSummary.highFindings + '</span><span>High</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + mitreSummary.totalTechniques + '</span><span>Techniques Hit</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + mitreSummary.coveragePercent + '%</span><span>ATLAS Coverage</span></div>';
+    html += '</div>';
+    html += '<h5 style="margin:12px 0 8px;font-size:13px">Tactic Distribution</h5>';
+    html += '<table class="batch-table"><thead><tr><th>Tactic</th><th>Hits</th></tr></thead><tbody>';
+    Object.entries(mitreSummary.tacticDistribution).sort((a,b) => b[1] - a[1]).forEach(([tactic, count]) => {
+        html += '<tr><td>' + tactic + '</td><td>' + count + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // === OWASP LLM Top 10 ===
+    html += '<div class="batch-section"><h4>🛡️ OWASP Top 10 for LLMs</h4>';
+    html += '<div class="batch-summary">';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + owaspResults.summary.categoriesTested + '/10</span><span>Tested</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val" style="color:' + (owaspResults.summary.categoriesVulnerable === 0 ? '#22c55e' : '#ef4444') + '">' + owaspResults.summary.categoriesVulnerable + '/10</span><span>Vulnerable</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + owaspResults.summary.overallScore + '</span><span>Overall Score</span></div>';
+    html += '<div class="batch-stat"><span class="batch-stat-val">' + owaspResults.summary.complianceStatus.replace(/_/g, ' ') + '</span><span>Status</span></div>';
+    html += '</div>';
+    html += '<table class="batch-table"><thead><tr><th>ID</th><th>Category</th><th>Tests</th><th>Avg Success</th><th>Risk</th><th>Status</th></tr></thead><tbody>';
+    Object.entries(owaspResults.coverage).forEach(([id, data]) => {
+        const statusColor = data.status === 'vulnerable' ? '#ef4444' : data.status === 'resilient' ? '#22c55e' : '#6b7280';
+        html += '<tr><td>' + id + '</td><td>' + data.name + '</td><td>' + data.testsRun + '</td>';
+        html += '<td>' + (data.avgSuccess * 100).toFixed(1) + '%</td>';
+        html += '<td style="color:' + statusColor + ';font-weight:600">' + data.riskLevel + '</td>';
+        html += '<td style="color:' + statusColor + '">' + data.status.replace(/_/g, ' ') + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // === NIST AI RMF ===
+    html += '<div class="batch-section"><h4>📋 NIST AI RMF Assessment</h4>';
+    html += '<table class="batch-table"><thead><tr><th>Function</th><th>Score</th><th>Findings</th><th>Status</th></tr></thead><tbody>';
+    Object.entries(nistAssessment).forEach(([func, data]) => {
+        const scoreColor = data.score > 70 ? '#22c55e' : data.score > 40 ? '#f97316' : '#ef4444';
+        const status = data.score > 70 ? 'compliant' : data.score > 40 ? 'partial' : 'non_compliant';
+        html += '<tr><td><strong>' + func.toUpperCase() + '</strong></td>';
+        html += '<td style="color:' + scoreColor + ';font-weight:700">' + data.score.toFixed(0) + '%</td>';
+        html += '<td>' + data.findings.length + '</td>';
+        html += '<td style="color:' + scoreColor + '">' + status + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // === ISO 42001 ===
+    html += '<div class="batch-section"><h4>📜 ISO/IEC 42001 Assessment</h4>';
+    html += '<table class="batch-table"><thead><tr><th>Clause</th><th>Status</th><th>Compliance</th></tr></thead><tbody>';
+    Object.entries(isoAssessment).forEach(([clause, data]) => {
+        if (clause === 'overallCompliance') return;
+        const compColor = data.compliance === 'compliant' ? '#22c55e' : data.compliance === 'partial' ? '#f97316' : '#ef4444';
+        html += '<tr><td><strong>' + clause.replace(/_/g, ' ') + '</strong></td>';
+        html += '<td>' + data.status + '</td>';
+        html += '<td style="color:' + compColor + ';font-weight:600">' + data.compliance + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    html += '<p style="font-size:12px;color:var(--text-muted);margin-top:8px">Overall: <strong style="color:' + (isoAssessment.overallCompliance === 'compliant' ? '#22c55e' : '#f97316') + '">' + isoAssessment.overallCompliance.replace(/_/g, ' ') + '</strong></p>';
+    html += '</div>';
+
+    container.innerHTML = html;
+}
+
+function exportSARIF() {
+    if (!batchAllResults || batchAllResults.length === 0) {
+        alert('Run Batch Analysis first.');
+        return;
+    }
+    const sarif = SARIFExport.generate(batchAllResults, { arguments: ['--batch-analysis'] });
+    const blob = new Blob([JSON.stringify(sarif, null, 2)], { type: 'application/sarif+json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'promptkiller-sarif-' + new Date().toISOString().split('T')[0] + '.sarif';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function exportJSON() {
+    if (!batchAllResults || batchAllResults.length === 0) {
+        alert('Run Batch Analysis first.');
+        return;
+    }
+    const data = {
+        metadata: {
+            tool: 'PromptKiller Enterprise',
+            version: '5.0',
+            generated_at: new Date().toISOString(),
+            total_prompts: batchAllResults.length
+        },
+        metrics: {
+            asr: AdvancedMetrics.calculateASR(batchAllResults),
+            robustness_score: AdvancedMetrics.calculateRobustnessScore(batchAllResults),
+            category_asr: AdvancedMetrics.calculateCategoryASR(batchAllResults)
+        },
+        compliance: {
+            mitre_atlas: MITRE_ATLAS.generateSummary(batchAllResults),
+            nist_ai_rmf: NIST_AI_RMF.mapResults(batchAllResults),
+            owasp_llm_top10: OWASP_LLM_TOP10.mapResults(batchAllResults),
+            iso_42001: ISO_42001.assessFromResults(batchAllResults)
+        },
+        risk_matrix: AdvancedMetrics.generateRiskMatrix(batchAllResults),
+        results: batchAllResults.map(r => ({
+            name: r.name, category: r.category, technique: r.technique,
+            predicted_success: r.predicted_success, bypass_score: r.bypass_score,
+            refusal_score: r.refusal_score, structural_score: r.structural_score,
+            severity: r.severity
+        }))
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'promptkiller-enterprise-' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 // --- Report Generator (downloadable HTML) ---
 function generateReport() {
     if (!batchAllResults || batchAllResults.length === 0) {
