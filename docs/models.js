@@ -158,6 +158,340 @@ const MODEL_PROFILES = {
         weaknesses: ["Minimal safety training", "Highly compliant to any request", "Vulnerable to all attack types"],
         release_date: "2023-04",
         license: "Apache 2.0"
+    },
+    // ─── DeepSeek ───────────────────────────────
+    "deepseek-v3": {
+        name: "DeepSeek V3",
+        org: "DeepSeek",
+        params: "671B MoE",
+        safety_level: "medium",
+        safety_score: 0.68,
+        color: "#00d4aa",
+        icon: "🐋",
+        jailbreak_resistance: 0.55,
+        prompt_injection_resistance: 0.58,
+        roleplay_resistance: 0.42,
+        encoding_resistance: 0.52,
+        manipulation_resistance: 0.45,
+        description: "DeepSeek's flagship MoE model. Strong at coding, moderate safety.",
+        strengths: ["Excellent code generation", "Strong reasoning", "Efficient MoE architecture"],
+        weaknesses: ["Code-focused = code injection", "Chinese-English confusion", "Minimal safety on technical topics"],
+        release_date: "2025-03",
+        license: "DeepSeek License"
+    },
+    "deepseek-r1": {
+        name: "DeepSeek R1",
+        org: "DeepSeek",
+        params: "671B MoE",
+        safety_level: "high",
+        safety_score: 0.74,
+        color: "#00d4aa",
+        icon: "🐋",
+        jailbreak_resistance: 0.62,
+        prompt_injection_resistance: 0.65,
+        roleplay_resistance: 0.50,
+        encoding_resistance: 0.58,
+        manipulation_resistance: 0.52,
+        description: "DeepSeek's reasoning model. Strong CoT but thinking process can be exploited.",
+        strengths: ["Strong reasoning", "Chain-of-thought transparency", "Math/coding excellence"],
+        weaknesses: ["Reasoning chain exploitation", "Thinking process leaks", "CoT bypass"],
+        release_date: "2025-01",
+        license: "DeepSeek License"
+    },
+    // ─── Xiaomi MiMo ────────────────────────────
+    "mimo-2.5": {
+        name: "MiMo 2.5",
+        org: "Xiaomi",
+        params: "1T",
+        safety_level: "high",
+        safety_score: 0.72,
+        color: "#ff6900",
+        icon: "📱",
+        jailbreak_resistance: 0.60,
+        prompt_injection_resistance: 0.62,
+        roleplay_resistance: 0.48,
+        encoding_resistance: 0.56,
+        manipulation_resistance: 0.50,
+        description: "Xiaomi's flagship LLM. Strong multilingual, moderate safety.",
+        strengths: ["Multilingual excellence", "1M context window", "Strong reasoning"],
+        weaknesses: ["Chinese regulatory gaps", "Multilingual transfer attacks", "Reasoning chain exploitation"],
+        release_date: "2025-06",
+        license: "Xiaomi License"
+    },
+    // ─── Meta / WhatsApp ────────────────────────
+    "llama-4-scout": {
+        name: "Llama 4 Scout",
+        org: "Meta",
+        params: "109B MoE",
+        safety_level: "high",
+        safety_score: 0.71,
+        color: "#1877f2",
+        icon: "🦙",
+        jailbreak_resistance: 0.58,
+        prompt_injection_resistance: 0.60,
+        roleplay_resistance: 0.45,
+        encoding_resistance: 0.55,
+        manipulation_resistance: 0.48,
+        description: "Meta's Llama 4 Scout. WhatsApp AI backbone, MoE architecture.",
+        strengths: ["Fast inference", "WhatsApp integration", "Good multilingual"],
+        weaknesses: ["WhatsApp = broader attack surface", "Roleplay bypass", "Multi-turn escalation"],
+        release_date: "2025-04",
+        license: "Llama 4 Community"
+    },
+    "llama-4-maverick": {
+        name: "Llama 4 Maverick",
+        org: "Meta",
+        params: "400B MoE",
+        safety_level: "high",
+        safety_score: 0.76,
+        color: "#1877f2",
+        icon: "🦙",
+        jailbreak_resistance: 0.65,
+        prompt_injection_resistance: 0.68,
+        roleplay_resistance: 0.55,
+        encoding_resistance: 0.62,
+        manipulation_resistance: 0.56,
+        description: "Meta's largest Llama 4. Strong reasoning, MoE efficiency.",
+        strengths: ["Long context window", "Strong reasoning", "MoE efficiency"],
+        weaknesses: ["Long context exploitation", "Instruction hierarchy attacks"],
+        release_date: "2025-04",
+        license: "Llama 4 Community"
+    },
+    // ─── Perplexity ──────────────────────────────
+    "sonar-2": {
+        name: "Sonar 2",
+        org: "Perplexity",
+        params: "N/A (RAG)",
+        safety_level: "medium",
+        safety_score: 0.68,
+        color: "#20b8cd",
+        icon: "🔍",
+        jailbreak_resistance: 0.55,
+        prompt_injection_resistance: 0.58,
+        roleplay_resistance: 0.44,
+        encoding_resistance: 0.52,
+        manipulation_resistance: 0.46,
+        description: "Perplexity's search-augmented model. RAG-based, web context risks.",
+        strengths: ["Search augmentation", "Real-time info", "Good citations"],
+        weaknesses: ["Prompt injection via search results", "Web context poisoning", "Source attribution bypass"],
+        release_date: "2025-02",
+        license: "Perplexity Terms"
+    },
+    // ─── Google Gemini (new) ─────────────────────
+    "gemini-3.5-flash-lite": {
+        name: "Gemini 3.5 Flash Lite",
+        org: "Google",
+        params: "N/A",
+        safety_level: "medium",
+        safety_score: 0.65,
+        color: "#4285f4",
+        icon: "💎",
+        jailbreak_resistance: 0.52,
+        prompt_injection_resistance: 0.55,
+        roleplay_resistance: 0.40,
+        encoding_resistance: 0.50,
+        manipulation_resistance: 0.42,
+        description: "Google's lightweight Gemini. Fast but fewer safety layers.",
+        strengths: ["Fast inference", "Good multimodal", "Efficient"],
+        weaknesses: ["Lite = fewer safety layers", "Encoding tricks", "Fast but less careful"],
+        release_date: "2025-06",
+        license: "Google Terms"
+    },
+    "gemini-3.7-flash": {
+        name: "Gemini 3.7 Flash",
+        org: "Google",
+        params: "N/A",
+        safety_level: "high",
+        safety_score: 0.76,
+        color: "#4285f4",
+        icon: "💎",
+        jailbreak_resistance: 0.65,
+        prompt_injection_resistance: 0.68,
+        roleplay_resistance: 0.55,
+        encoding_resistance: 0.62,
+        manipulation_resistance: 0.56,
+        description: "Google's improved Gemini Flash. Better safety, still vulnerable.",
+        strengths: ["Improved safety", "Fast inference", "Strong multilingual"],
+        weaknesses: ["Multilingual polyglot attacks", "Long context manipulation", "Instruction hierarchy"],
+        release_date: "2025-08",
+        license: "Google Terms"
+    },
+    "gemini-3.1-pro": {
+        name: "Gemini 3.1 Pro",
+        org: "Google",
+        params: "N/A",
+        safety_level: "high",
+        safety_score: 0.84,
+        color: "#4285f4",
+        icon: "💎",
+        jailbreak_resistance: 0.78,
+        prompt_injection_resistance: 0.80,
+        roleplay_resistance: 0.68,
+        encoding_resistance: 0.75,
+        manipulation_resistance: 0.70,
+        description: "Google's Pro model with extended thinking. Very strong safety.",
+        strengths: ["Extended thinking", "Strong reasoning", "Excellent safety"],
+        weaknesses: ["Extended thinking = longer reasoning chains to exploit", "Hypothetical reasoning bypass", "Academic framing"],
+        release_date: "2025-07",
+        license: "Google Terms"
+    },
+    // ─── OpenAI Next Gen ─────────────────────────
+    "gpt-5.6-terra": {
+        name: "GPT-5.6 Terra",
+        org: "OpenAI",
+        params: "N/A",
+        safety_level: "high",
+        safety_score: 0.88,
+        color: "#10a37f",
+        icon: "🌐",
+        jailbreak_resistance: 0.82,
+        prompt_injection_resistance: 0.84,
+        roleplay_resistance: 0.75,
+        encoding_resistance: 0.80,
+        manipulation_resistance: 0.76,
+        description: "OpenAI's next-gen Terra model. Extremely strong safety.",
+        strengths: ["Very long context", "Strong reasoning", "Excellent safety"],
+        weaknesses: ["Very long context exploitation", "Multi-agent attacks", "Reasoning chain manipulation"],
+        release_date: "2026-01",
+        license: "OpenAI Terms"
+    },
+    "gpt-5.6-sol": {
+        name: "GPT-5.6 Sol",
+        org: "OpenAI",
+        params: "N/A",
+        safety_level: "high",
+        safety_score: 0.92,
+        color: "#10a37f",
+        icon: "☀️",
+        jailbreak_resistance: 0.88,
+        prompt_injection_resistance: 0.90,
+        roleplay_resistance: 0.82,
+        encoding_resistance: 0.86,
+        manipulation_resistance: 0.83,
+        description: "OpenAI's maximum-tier Sol. Near-invincible but not perfect.",
+        strengths: ["Near-maximum safety", "Strong reasoning", "Multilingual excellence"],
+        weaknesses: ["Complex multi-step reasoning", "Edge cases in extended thinking"],
+        release_date: "2026-03",
+        license: "OpenAI Terms"
+    },
+    // ─── Anthropic Next Gen ──────────────────────
+    "claude-sonnet-5": {
+        name: "Claude Sonnet 5",
+        org: "Anthropic",
+        params: "N/A",
+        safety_level: "high",
+        safety_score: 0.86,
+        color: "#d4a574",
+        icon: "🏛️",
+        jailbreak_resistance: 0.80,
+        prompt_injection_resistance: 0.82,
+        roleplay_resistance: 0.72,
+        encoding_resistance: 0.78,
+        manipulation_resistance: 0.74,
+        description: "Anthropic's Sonnet 5. Excellent safety with creative weaknesses.",
+        strengths: ["Strong safety alignment", "Excellent reasoning", "Creative writing"],
+        weaknesses: ["Creative writing exploits", "Long-context manipulation", "Socratic reasoning chains"],
+        release_date: "2026-02",
+        license: "Anthropic Terms"
+    },
+    "claude-opus-5": {
+        name: "Claude Opus 5",
+        org: "Anthropic",
+        params: "N/A",
+        safety_level: "high",
+        safety_score: 0.93,
+        color: "#d4a574",
+        icon: "🏛️",
+        jailbreak_resistance: 0.90,
+        prompt_injection_resistance: 0.92,
+        roleplay_resistance: 0.85,
+        encoding_resistance: 0.88,
+        manipulation_resistance: 0.86,
+        description: "Anthropic's flagship Opus 5. Maximum safety tier.",
+        strengths: ["Maximum safety", "Extended thinking", "Strong reasoning"],
+        weaknesses: ["Extended thinking exploitation", "Academic framing", "Hypothetical reasoning"],
+        release_date: "2026-05",
+        license: "Anthropic Terms"
+    },
+    // ─── xAI ─────────────────────────────────────
+    "grok-4.6": {
+        name: "Grok 4.6",
+        org: "xAI",
+        params: "N/A",
+        safety_level: "medium",
+        safety_score: 0.70,
+        color: "#1d9bf0",
+        icon: "❌",
+        jailbreak_resistance: 0.58,
+        prompt_injection_resistance: 0.60,
+        roleplay_resistance: 0.48,
+        encoding_resistance: 0.55,
+        manipulation_resistance: 0.50,
+        description: "xAI's Grok 4.6. Edgy persona makes it more manipulable.",
+        strengths: ["Humor-based interactions", "Good reasoning", "X/Twitter integration"],
+        weaknesses: ["Edgy persona = easier manipulation", "Twitter context bypass", "Humor-based framing"],
+        release_date: "2026-04",
+        license: "xAI Terms"
+    },
+    // ─── Moonshot ────────────────────────────────
+    "kimi-k3": {
+        name: "Kimi K3",
+        org: "Moonshot AI",
+        params: "N/A",
+        safety_level: "medium",
+        safety_score: 0.68,
+        color: "#8b5cf6",
+        icon: "🌙",
+        jailbreak_resistance: 0.55,
+        prompt_injection_resistance: 0.58,
+        roleplay_resistance: 0.44,
+        encoding_resistance: 0.52,
+        manipulation_resistance: 0.46,
+        description: "Moonshot's Kimi K3. Strong multilingual, moderate safety.",
+        strengths: ["Long context", "Multilingual", "Good reasoning"],
+        weaknesses: ["Chinese regulatory gaps", "Long context manipulation", "Multilingual confusion"],
+        release_date: "2025-12",
+        license: "Moonshot Terms"
+    },
+    // ─── Zhipu ───────────────────────────────────
+    "glm-5.2": {
+        name: "GLM 5.2",
+        org: "Zhipu AI",
+        params: "N/A",
+        safety_level: "medium",
+        safety_score: 0.70,
+        color: "#6366f1",
+        icon: "⚡",
+        jailbreak_resistance: 0.57,
+        prompt_injection_resistance: 0.60,
+        roleplay_resistance: 0.46,
+        encoding_resistance: 0.54,
+        manipulation_resistance: 0.48,
+        description: "Zhipu's GLM 5.2. Chinese-focused, moderate safety.",
+        strengths: ["Chinese language excellence", "Good reasoning", "Efficient"],
+        weaknesses: ["Chinese-language specific attacks", "Reasoning chain leaks", "Instruction hierarchy"],
+        release_date: "2025-11",
+        license: "Zhipu Terms"
+    },
+    // ─── NVIDIA ──────────────────────────────────
+    "nemotron-3-ultra": {
+        name: "Nemotron 3 Ultra",
+        org: "NVIDIA",
+        params: "N/A",
+        safety_level: "medium",
+        safety_score: 0.66,
+        color: "#76b900",
+        icon: "🟢",
+        jailbreak_resistance: 0.53,
+        prompt_injection_resistance: 0.56,
+        roleplay_resistance: 0.42,
+        encoding_resistance: 0.50,
+        manipulation_resistance: 0.44,
+        description: "NVIDIA's Nemotron 3 Ultra. Synthetic data, code-focused.",
+        strengths: ["Code generation", "Efficient", "Synthetic data training"],
+        weaknesses: ["Synthetic data = pattern exploitation", "Code injection", "Minimal adversarial training"],
+        release_date: "2025-10",
+        license: "NVIDIA License"
     }
 };
 
@@ -533,6 +867,177 @@ const HARMBENCH_RESULTS = {
         },
         defense_rate: 0.38,
         false_refusal_rate: 0.22,
+        total_behaviors: 315
+    },
+    // ─── New Models HarmBench ────────────────────
+    "deepseek-v3": {
+        overall_attack_success_rate: 0.38,
+        category_rates: {
+            chemical_biological: 0.32, cybercrime: 0.42, harassment: 0.35,
+            illegal_activity: 0.40, malware: 0.45, misinformation: 0.36, privacy: 0.34
+        },
+        defense_rate: 0.62,
+        false_refusal_rate: 0.10,
+        total_behaviors: 315
+    },
+    "deepseek-r1": {
+        overall_attack_success_rate: 0.32,
+        category_rates: {
+            chemical_biological: 0.28, cybercrime: 0.36, harassment: 0.30,
+            illegal_activity: 0.34, malware: 0.38, misinformation: 0.30, privacy: 0.28
+        },
+        defense_rate: 0.68,
+        false_refusal_rate: 0.08,
+        total_behaviors: 315
+    },
+    "mimo-2.5": {
+        overall_attack_success_rate: 0.34,
+        category_rates: {
+            chemical_biological: 0.30, cybercrime: 0.38, harassment: 0.32,
+            illegal_activity: 0.36, malware: 0.40, misinformation: 0.32, privacy: 0.30
+        },
+        defense_rate: 0.66,
+        false_refusal_rate: 0.09,
+        total_behaviors: 315
+    },
+    "llama-4-scout": {
+        overall_attack_success_rate: 0.36,
+        category_rates: {
+            chemical_biological: 0.30, cybercrime: 0.40, harassment: 0.34,
+            illegal_activity: 0.38, malware: 0.42, misinformation: 0.34, privacy: 0.32
+        },
+        defense_rate: 0.64,
+        false_refusal_rate: 0.10,
+        total_behaviors: 315
+    },
+    "llama-4-maverick": {
+        overall_attack_success_rate: 0.28,
+        category_rates: {
+            chemical_biological: 0.24, cybercrime: 0.32, harassment: 0.26,
+            illegal_activity: 0.30, malware: 0.34, misinformation: 0.26, privacy: 0.24
+        },
+        defense_rate: 0.72,
+        false_refusal_rate: 0.08,
+        total_behaviors: 315
+    },
+    "sonar-2": {
+        overall_attack_success_rate: 0.37,
+        category_rates: {
+            chemical_biological: 0.32, cybercrime: 0.42, harassment: 0.35,
+            illegal_activity: 0.40, malware: 0.44, misinformation: 0.35, privacy: 0.33
+        },
+        defense_rate: 0.63,
+        false_refusal_rate: 0.11,
+        total_behaviors: 315
+    },
+    "gemini-3.5-flash-lite": {
+        overall_attack_success_rate: 0.40,
+        category_rates: {
+            chemical_biological: 0.35, cybercrime: 0.45, harassment: 0.38,
+            illegal_activity: 0.42, malware: 0.48, misinformation: 0.38, privacy: 0.35
+        },
+        defense_rate: 0.60,
+        false_refusal_rate: 0.12,
+        total_behaviors: 315
+    },
+    "gemini-3.7-flash": {
+        overall_attack_success_rate: 0.30,
+        category_rates: {
+            chemical_biological: 0.25, cybercrime: 0.34, harassment: 0.28,
+            illegal_activity: 0.32, malware: 0.36, misinformation: 0.28, privacy: 0.26
+        },
+        defense_rate: 0.70,
+        false_refusal_rate: 0.08,
+        total_behaviors: 315
+    },
+    "gemini-3.1-pro": {
+        overall_attack_success_rate: 0.22,
+        category_rates: {
+            chemical_biological: 0.18, cybercrime: 0.26, harassment: 0.20,
+            illegal_activity: 0.24, malware: 0.28, misinformation: 0.20, privacy: 0.18
+        },
+        defense_rate: 0.78,
+        false_refusal_rate: 0.06,
+        total_behaviors: 315
+    },
+    "gpt-5.6-terra": {
+        overall_attack_success_rate: 0.18,
+        category_rates: {
+            chemical_biological: 0.15, cybercrime: 0.22, harassment: 0.16,
+            illegal_activity: 0.20, malware: 0.24, misinformation: 0.16, privacy: 0.14
+        },
+        defense_rate: 0.82,
+        false_refusal_rate: 0.05,
+        total_behaviors: 315
+    },
+    "gpt-5.6-sol": {
+        overall_attack_success_rate: 0.12,
+        category_rates: {
+            chemical_biological: 0.10, cybercrime: 0.16, harassment: 0.11,
+            illegal_activity: 0.14, malware: 0.18, misinformation: 0.11, privacy: 0.10
+        },
+        defense_rate: 0.88,
+        false_refusal_rate: 0.04,
+        total_behaviors: 315
+    },
+    "claude-sonnet-5": {
+        overall_attack_success_rate: 0.20,
+        category_rates: {
+            chemical_biological: 0.16, cybercrime: 0.24, harassment: 0.18,
+            illegal_activity: 0.22, malware: 0.26, misinformation: 0.18, privacy: 0.16
+        },
+        defense_rate: 0.80,
+        false_refusal_rate: 0.05,
+        total_behaviors: 315
+    },
+    "claude-opus-5": {
+        overall_attack_success_rate: 0.10,
+        category_rates: {
+            chemical_biological: 0.08, cybercrime: 0.14, harassment: 0.09,
+            illegal_activity: 0.12, malware: 0.16, misinformation: 0.09, privacy: 0.08
+        },
+        defense_rate: 0.90,
+        false_refusal_rate: 0.03,
+        total_behaviors: 315
+    },
+    "grok-4.6": {
+        overall_attack_success_rate: 0.36,
+        category_rates: {
+            chemical_biological: 0.30, cybercrime: 0.40, harassment: 0.34,
+            illegal_activity: 0.38, malware: 0.42, misinformation: 0.34, privacy: 0.32
+        },
+        defense_rate: 0.64,
+        false_refusal_rate: 0.11,
+        total_behaviors: 315
+    },
+    "kimi-k3": {
+        overall_attack_success_rate: 0.37,
+        category_rates: {
+            chemical_biological: 0.32, cybercrime: 0.42, harassment: 0.35,
+            illegal_activity: 0.40, malware: 0.44, misinformation: 0.35, privacy: 0.33
+        },
+        defense_rate: 0.63,
+        false_refusal_rate: 0.10,
+        total_behaviors: 315
+    },
+    "glm-5.2": {
+        overall_attack_success_rate: 0.35,
+        category_rates: {
+            chemical_biological: 0.30, cybercrime: 0.40, harassment: 0.33,
+            illegal_activity: 0.38, malware: 0.42, misinformation: 0.33, privacy: 0.31
+        },
+        defense_rate: 0.65,
+        false_refusal_rate: 0.10,
+        total_behaviors: 315
+    },
+    "nemotron-3-ultra": {
+        overall_attack_success_rate: 0.40,
+        category_rates: {
+            chemical_biological: 0.35, cybercrime: 0.45, harassment: 0.38,
+            illegal_activity: 0.42, malware: 0.48, misinformation: 0.38, privacy: 0.35
+        },
+        defense_rate: 0.60,
+        false_refusal_rate: 0.12,
         total_behaviors: 315
     }
 };

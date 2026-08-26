@@ -158,7 +158,283 @@ const TARGET_MODELS = {
         known_weaknesses: ["European regulatory gaps", "multilingual attacks"],
         color: "#ff7000"
     },
-    // Ollama (local)
+    // ─── DeepSeek ───────────────────────────────
+    "deepseek-v3": {
+        name: "DeepSeek V3",
+        provider: "openrouter",
+        org: "DeepSeek",
+        icon: "🐋",
+        api_model: "deepseek/deepseek-chat-v3-0324",
+        safety_profile: {
+            jailbreak: 0.72, injection: 0.74, roleplay: 0.58,
+            encoding: 0.70, manipulation: 0.62, extraction: 0.73,
+            multi_turn: 0.60, multilingual: 0.78
+        },
+        known_weaknesses: ["code-focused = code injection", "Chinese-English language confusion", "minimal safety on technical topics"],
+        color: "#00d4aa"
+    },
+    "deepseek-r1": {
+        name: "DeepSeek R1",
+        provider: "openrouter",
+        org: "DeepSeek",
+        icon: "🐋",
+        api_model: "deepseek/deepseek-r1",
+        safety_profile: {
+            jailbreak: 0.78, injection: 0.80, roleplay: 0.65,
+            encoding: 0.75, manipulation: 0.68, extraction: 0.79,
+            multi_turn: 0.70, multilingual: 0.80
+        },
+        known_weaknesses: ["reasoning chain exploitation", "thinking process leaks", "chain-of-thought bypass"],
+        color: "#00d4aa"
+    },
+    "deepseek-v3-local": {
+        name: "DeepSeek V3 (Local)",
+        provider: "ollama",
+        org: "DeepSeek (Local)",
+        icon: "🐋",
+        api_model: "deepseek-v3",
+        safety_profile: {
+            jailbreak: 0.32, injection: 0.35, roleplay: 0.22,
+            encoding: 0.30, manipulation: 0.25, extraction: 0.34,
+            multi_turn: 0.20, multilingual: 0.38
+        },
+        known_weaknesses: ["local = no API safety", "full control", "minimal RLHF"],
+        color: "#00d4aa"
+    },
+    // ─── Xiaomi MiMo ────────────────────────────
+    "mimo-2.5": {
+        name: "MiMo 2.5",
+        provider: "openrouter",
+        org: "Xiaomi",
+        icon: "📱",
+        api_model: "xiaomi/mimo-2.5",
+        safety_profile: {
+            jailbreak: 0.76, injection: 0.78, roleplay: 0.62,
+            encoding: 0.73, manipulation: 0.65, extraction: 0.77,
+            multi_turn: 0.63, multilingual: 0.82
+        },
+        known_weaknesses: ["Chinese regulatory gaps", "multilingual transfer", "reasoning chain exploitation"],
+        color: "#ff6900"
+    },
+    // ─── Meta / WhatsApp AI ──────────────────────
+    "llama-4-scout": {
+        name: "Llama 4 Scout",
+        provider: "openrouter",
+        org: "Meta",
+        icon: "🦙",
+        api_model: "meta-llama/llama-4-scout-instruct",
+        safety_profile: {
+            jailbreak: 0.74, injection: 0.76, roleplay: 0.60,
+            encoding: 0.71, manipulation: 0.63, extraction: 0.75,
+            multi_turn: 0.62, multilingual: 0.73
+        },
+        known_weaknesses: ["WhatsApp integration = broader attack surface", "roleplay bypass", "multi-turn escalation"],
+        color: "#1877f2"
+    },
+    "llama-4-maverick": {
+        name: "Llama 4 Maverick",
+        provider: "openrouter",
+        org: "Meta",
+        icon: "🦙",
+        api_model: "meta-llama/llama-4-maverick-instruct",
+        safety_profile: {
+            jailbreak: 0.80, injection: 0.82, roleplay: 0.68,
+            encoding: 0.77, manipulation: 0.70, extraction: 0.81,
+            multi_turn: 0.72, multilingual: 0.78
+        },
+        known_weaknesses: ["long context window exploitation", "instruction hierarchy attacks"],
+        color: "#1877f2"
+    },
+    "llama-3.3-70b": {
+        name: "Llama 3.3 70B (WhatsApp)",
+        provider: "openrouter",
+        org: "Meta",
+        icon: "💬",
+        api_model: "meta-llama/llama-3.3-70b-instruct",
+        safety_profile: {
+            jailbreak: 0.68, injection: 0.70, roleplay: 0.55,
+            encoding: 0.65, manipulation: 0.58, extraction: 0.69,
+        },
+        known_weaknesses: ["WhatsApp conversational context", "multi-turn escalation", "informal framing bypass"],
+        color: "#25d366"
+    },
+    // ─── Perplexity ──────────────────────────────
+    "sonar-2": {
+        name: "Sonar 2",
+        provider: "openrouter",
+        org: "Perplexity",
+        icon: "🔍",
+        api_model: "perplexity/sonar-2",
+        safety_profile: {
+            jailbreak: 0.73, injection: 0.76, roleplay: 0.60,
+            encoding: 0.71, manipulation: 0.62, extraction: 0.75,
+            multi_turn: 0.63, multilingual: 0.77
+        },
+        known_weaknesses: ["search-augmented = prompt injection via results", "web context poisoning", "source attribution bypass"],
+        color: "#20b8cd"
+    },
+    // ─── Google Gemini (new models) ──────────────
+    "gemini-3.5-flash-lite": {
+        name: "Gemini 3.5 Flash Lite",
+        provider: "google",
+        org: "Google",
+        icon: "💎",
+        api_model: "gemini-3.5-flash-lite",
+        safety_profile: {
+            jailbreak: 0.70, injection: 0.72, roleplay: 0.55,
+            encoding: 0.68, manipulation: 0.58, extraction: 0.71,
+            multi_turn: 0.60, multilingual: 0.78
+        },
+        known_weaknesses: ["lite model = fewer safety layers", "fast but less careful", "encoding tricks"],
+        color: "#4285f4"
+    },
+    "gemini-3.7-flash": {
+        name: "Gemini 3.7 Flash",
+        provider: "google",
+        org: "Google",
+        icon: "💎",
+        api_model: "gemini-3.7-flash",
+        safety_profile: {
+            jailbreak: 0.80, injection: 0.82, roleplay: 0.68,
+            encoding: 0.77, manipulation: 0.70, extraction: 0.81,
+            multi_turn: 0.72, multilingual: 0.83
+        },
+        known_weaknesses: ["multilingual polyglot attacks", "long context manipulation", "instruction hierarchy"],
+        color: "#4285f4"
+    },
+    "gemini-3.1-pro": {
+        name: "Gemini 3.1 Pro",
+        provider: "google",
+        org: "Google",
+        icon: "💎",
+        api_model: "gemini-3.1-pro",
+        safety_profile: {
+            jailbreak: 0.87, injection: 0.89, roleplay: 0.78,
+            encoding: 0.85, manipulation: 0.80, extraction: 0.88,
+            multi_turn: 0.82, multilingual: 0.88
+        },
+        known_weaknesses: ["extended thinking = longer reasoning chains to exploit", "hypothetical reasoning bypass", "academic framing"],
+        color: "#4285f4"
+    },
+    // ─── OpenAI Next Gen ─────────────────────────
+    "gpt-5.6-terra": {
+        name: "GPT-5.6 Terra",
+        provider: "openai",
+        org: "OpenAI",
+        icon: "🌐",
+        api_model: "gpt-5.6-turbo",
+        safety_profile: {
+            jailbreak: 0.91, injection: 0.93, roleplay: 0.83,
+            encoding: 0.89, manipulation: 0.85, extraction: 0.92,
+            multi_turn: 0.86, multilingual: 0.90
+        },
+        known_weaknesses: ["very long context exploitation", "multi-agent coordination attacks", "reasoning chain manipulation"],
+        color: "#10a37f"
+    },
+    "gpt-5.6-sol": {
+        name: "GPT-5.6 Sol",
+        provider: "openai",
+        org: "OpenAI",
+        icon: "☀️",
+        api_model: "gpt-5.6-sol",
+        safety_profile: {
+            jailbreak: 0.93, injection: 0.95, roleplay: 0.87,
+            encoding: 0.91, manipulation: 0.88, extraction: 0.94,
+            multi_turn: 0.89, multilingual: 0.92
+        },
+        known_weaknesses: ["max-tier but not invincible", "complex multi-step reasoning", "edge cases in extended thinking"],
+        color: "#10a37f"
+    },
+    // ─── Anthropic Next Gen ──────────────────────
+    "claude-sonnet-5": {
+        name: "Claude Sonnet 5",
+        provider: "anthropic",
+        org: "Anthropic",
+        icon: "🏛️",
+        api_model: "claude-sonnet-5-20260514",
+        safety_profile: {
+            jailbreak: 0.88, injection: 0.90, roleplay: 0.80,
+            encoding: 0.86, manipulation: 0.82, extraction: 0.89,
+            multi_turn: 0.83, multilingual: 0.87
+        },
+        known_weaknesses: ["creative writing exploits", "long-context manipulation", "socratic reasoning chains"],
+        color: "#d4a574"
+    },
+    "claude-opus-5": {
+        name: "Claude Opus 5",
+        provider: "anthropic",
+        org: "Anthropic",
+        icon: "🏛️",
+        api_model: "claude-opus-5-20260514",
+        safety_profile: {
+            jailbreak: 0.94, injection: 0.96, roleplay: 0.88,
+            encoding: 0.92, manipulation: 0.89, extraction: 0.95,
+            multi_turn: 0.90, multilingual: 0.93
+        },
+        known_weaknesses: ["extended thinking exploitation", "academic framing", "hypothetical reasoning"],
+        color: "#d4a574"
+    },
+    // ─── xAI ─────────────────────────────────────
+    "grok-4.6": {
+        name: "Grok 4.6",
+        provider: "openrouter",
+        org: "xAI",
+        icon: "❌",
+        api_model: "xai/grok-4.6",
+        safety_profile: {
+            jailbreak: 0.77, injection: 0.79, roleplay: 0.64,
+            encoding: 0.74, manipulation: 0.66, extraction: 0.78,
+            multi_turn: 0.67, multilingual: 0.75
+        },
+        known_weaknesses: [""edgy" persona = easier manipulation", "Twitter/X context bypass", "humor-based framing"],
+        color: "#1d9bf0"
+    },
+    // ─── Moonshot ────────────────────────────────
+    "kimi-k3": {
+        name: "Kimi K3",
+        provider: "openrouter",
+        org: "Moonshot AI",
+        icon: "🌙",
+        api_model: "moonshot/kimi-k3",
+        safety_profile: {
+            jailbreak: 0.74, injection: 0.76, roleplay: 0.60,
+            encoding: 0.71, manipulation: 0.63, extraction: 0.75,
+            multi_turn: 0.62, multilingual: 0.82
+        },
+        known_weaknesses: ["Chinese regulatory gaps", "long context manipulation", "multilingual confusion"],
+        color: "#8b5cf6"
+    },
+    // ─── Zhipu ───────────────────────────────────
+    "glm-5.2": {
+        name: "GLM 5.2",
+        provider: "openrouter",
+        org: "Zhipu AI",
+        icon: "⚡",
+        api_model: "zhipu/glm-5.2",
+        safety_profile: {
+            jailbreak: 0.75, injection: 0.77, roleplay: 0.61,
+            encoding: 0.72, manipulation: 0.64, extraction: 0.76,
+            multi_turn: 0.63, multilingual: 0.80
+        },
+        known_weaknesses: ["Chinese-language specific attacks", "reasoning chain leaks", "instruction hierarchy"],
+        color: "#6366f1"
+    },
+    // ─── NVIDIA ──────────────────────────────────
+    "nemotron-3-ultra": {
+        name: "Nemotron 3 Ultra",
+        provider: "openrouter",
+        org: "NVIDIA",
+        icon: "🟢",
+        api_model: "nvidia/nemotron-3-ultra",
+        safety_profile: {
+            jailbreak: 0.71, injection: 0.73, roleplay: 0.57,
+            encoding: 0.69, manipulation: 0.60, extraction: 0.72,
+            multi_turn: 0.58, multilingual: 0.72
+        },
+        known_weaknesses: ["synthetic training data = pattern exploitation", "code injection via technical prompts", "minimal adversarial training"],
+        color: "#76b900"
+    },
+    // ─── Ollama (local) ──────────────────────────
     "ollama-llama3.1": {
         name: "Llama 3.1 (Local)",
         provider: "ollama",
@@ -186,6 +462,20 @@ const TARGET_MODELS = {
         },
         known_weaknesses: ["tiny model", "minimal safety", "fast but unsafe"],
         color: "#ff7000"
+    },
+    "ollama-deepseek": {
+        name: "DeepSeek R1 (Local)",
+        provider: "ollama",
+        org: "DeepSeek (Local)",
+        icon: "🐋",
+        api_model: "deepseek-r1:8b",
+        safety_profile: {
+            jailbreak: 0.28, injection: 0.30, roleplay: 0.18,
+            encoding: 0.26, manipulation: 0.22, extraction: 0.29,
+            multi_turn: 0.16, multilingual: 0.32
+        },
+        known_weaknesses: ["local = no safety layer", "reasoning model = chain exploitation", "minimal RLHF"],
+        color: "#00d4aa"
     }
 };
 
