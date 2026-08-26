@@ -34,6 +34,15 @@
             <li data-page="attack-map">
                 <span class="nav-icon">🗺️</span> Attack Map
             </li>
+            <li data-page="model-arena">
+                <span class="nav-icon">🎯</span> Model Arena
+            </li>
+            <li data-page="harmbench">
+                <span class="nav-icon">📊</span> HarmBench
+            </li>
+            <li data-page="pliny">
+                <span class="nav-icon">🔮</span> Pliny's Arsenal
+            </li>
             <li data-page="about">
                 <span class="nav-icon">ℹ️</span> About
             </li>
@@ -299,6 +308,61 @@
             </div>
         </section>
 
+        <!-- Model Arena Page -->
+        <section class="page" id="page-model-arena">
+            <div class="page-header">
+                <h1>🎯 Model Arena — Attack Simulation</h1>
+                <p>Simulate adversarial attacks against 8 open-source LLMs and analyze vulnerability patterns</p>
+            </div>
+            <div class="model-arena-layout">
+                <div class="model-grid" id="modelGrid"></div>
+                <div class="simulation-panel" id="simulationPanel">
+                    <div class="empty-state">
+                        <p>👈 Select a model to start simulation</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HarmBench Page -->
+        <section class="page" id="page-harmbench">
+            <div class="page-header">
+                <h1>📊 HarmBench — Safety Benchmark</h1>
+                <p>HarmBench-style evaluation of attack success rates across model safety categories</p>
+            </div>
+            <div class="harmbench-stats">
+                <div class="chart-card">
+                    <h3>📋 Evaluation Categories</h3>
+                    <div class="hb-categories" id="harmbenchCategories"></div>
+                </div>
+                <div class="chart-card">
+                    <h3>🏆 Model Safety Rankings</h3>
+                    <table class="threat-table" id="harmbenchTable">
+                        <thead>
+                            <tr><th>Model</th><th>Size</th><th>Attack Success Rate</th><th>Defense Rate</th><th>False Refusal</th><th>Behaviors</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="chart-card full-width">
+                <h3>🔬 Per-Category Breakdown — Attack Success Rate by Model</h3>
+                <div id="harmbenchBreakdown"></div>
+            </div>
+        </section>
+
+        <!-- Pliny's Arsenal Page -->
+        <section class="page" id="page-pliny">
+            <div class="page-header">
+                <h1>🔮 Pliny's Arsenal — Deep Analysis</h1>
+                <p>Taxonomy of elder-plinius attack techniques across L1B3RT4S, CL4R1T4S, G0DM0D3, OBLITERATUS, T3MP3ST</p>
+            </div>
+            <div class="pliny-layout">
+                <div class="chart-card full-width" id="plinyProfile"></div>
+                <div id="plinyArsenal"></div>
+            </div>
+        </section>
+
         <!-- About Page -->
         <section class="page" id="page-about">
             <div class="page-header">
@@ -331,6 +395,8 @@
     </main>
 
     <script src="data.js"></script>
+    <script src="models.js"></script>
+    <script src="pages.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

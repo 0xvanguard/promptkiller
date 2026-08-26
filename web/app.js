@@ -56,6 +56,10 @@ function navigateTo(page) {
     document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${page}`)?.classList.add('active');
+    // Render new pages on demand
+    if (page === 'model-arena') renderModelArena();
+    if (page === 'harmbench') renderHarmBench();
+    if (page === 'pliny') renderPlinyArsenal();
 }
 
 // --- Theme ---
