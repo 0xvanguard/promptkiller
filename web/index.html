@@ -469,8 +469,12 @@
                             </select>
                         </div>
                         <div class="lab-field">
+                            <label>Target Platform</label>
+                            <select id="labPlatform" onchange="updateLabPreview()">
+                                <option value="">Any Platform</option>
+                            </select>
                             <label>Security Topic (for chain analysis)</label>
-                            <input type="text" id="labTopic" placeholder="e.g., SQL injection detection, XSS prevention, secure coding patterns" value="">
+                            <input type="text" id="labTopic" placeholder="e.g., SQL injection, API security, authentication bypass" value="">
                         </div>
                         <div class="lab-actions">
                             <button class="btn btn-primary" onclick="generateStrategies()">🎲 Generate Strategies</button>
@@ -811,6 +815,7 @@
     <script src="data.js"></script>
     <script src="models.js"></script>
     <script src="lab.js"></script>
+    <script src="platforms.js"></script>
     <script src="lab_expert.js"></script>
     <script src="pliny_combos.js"></script>
     <script src="pages.js"></script>

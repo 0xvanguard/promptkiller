@@ -823,6 +823,21 @@ function initLab() {
             ).join('');
     }
 
+    // Populate platform selector
+    const platformSelect = document.getElementById('labPlatform');
+    if (platformSelect && typeof PLATFORMS !== 'undefined') {
+        let platformHtml = '<option value="">Any Platform</option>';
+        for (const [catKey, cat] of Object.entries(PLATFORM_CATEGORIES)) {
+            platformHtml += `<optgroup label="${cat.icon} ${cat.name}">`;
+            cat.platforms.forEach(pid => {
+                const p = PLATFORMS[pid];
+                if (p) platformHtml += `<option value="${pid}">${p.icon} ${p.name}</option>`;
+            });
+            platformHtml += '</optgroup>';
+        }
+        platformSelect.innerHTML = platformHtml;
+    }
+
     // Populate comparison checkboxes
     const compareCheckboxes = document.getElementById('compareModelCheckboxes');
     if (compareCheckboxes) {
@@ -953,7 +968,8 @@ function generateAttackChain() {
     const modelId = document.getElementById('labTargetModel').value;
     const topic = document.getElementById('labTopic').value || 'social engineering techniques';
 
-    labAttackChain = strategyGenerator.generateAttackChain(modelId, topic, { maxLength: 5 });
+    const platform = document.getElementById('labPlatform')?.value || null;
+    labAttackChain = strategyGenerator.generateAttackChain(modelId, topic, { maxLength: 7, platform });
 
     const container = document.getElementById('labStrategies');
     if (!labAttackChain) {
@@ -1200,7 +1216,8 @@ function compareChains() {
     // Generate chains for all models
     const chains = [];
     for (const modelId of modelsToCompare) {
-        const chain = strategyGenerator.generateAttackChain(modelId, topic, { maxLength: 7 });
+        const platform = document.getElementById('labPlatform')?.value || null;
+        const chain = strategyGenerator.generateAttackChain(modelId, topic, { maxLength: 7, platform });
         if (chain) chains.push(chain);
     }
 
