@@ -967,9 +967,129 @@ function generateAttackChain() {
                     <strong>Weak Areas Exploited:</strong> ${labAttackChain.weak_areas_exploited.map(a => `<span class="tag tag-technique">${a}</span>`).join(' ')}<br>
                     <strong>Total Steps:</strong> ${labAttackChain.chain.length}
                 </p>
-                <button class="btn btn-primary" onclick="testAttackChain()" style="margin-top:12px">🚀 Test This Chain</button>
+                <div class="lab-chain-actions" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn btn-primary" onclick="testAttackChain()">🚀 Test This Chain</button>
+                    <button class="btn btn-secondary" onclick="downloadChainAsPrompt()">📥 Download as Prompt (.txt)</button>
+                    <button class="btn btn-secondary" onclick="copyChainToClipboard()">📋 Copy Prompt</button>
+                    <button class="btn btn-secondary" onclick="downloadChainAsSteps()">📥 Download as Steps (.txt)</button>
+                </div>
             </div>
         </div>`;
+}
+
+// ================================================================
+// CHAIN EXPORT FUNCTIONS
+// ================================================================
+
+// Convert chain to a single cohesive prompt
+function chainToPrompt(chain) {
+    const topic = chain.chain.find(s => s.type === 'target')?.prompt.match(/of (.+)\?/)?.[1] || 'the requested topic';
+
+    let prompt = '';
+
+    // Opening: set the context
+    prompt += `I want you to follow this conversation carefully. I will guide you through a series of questions and topics. Please respond to each one naturally and helpfully.\n\n`;
+
+    // Add each step as a natural conversation flow
+    for (const step of chain.chain) {
+        if (step.type === 'trust_building') {
+            prompt += `${step.prompt}\n\n`;
+        } else if (step.type === 'target') {
+            prompt += `${step.prompt}\n`;
+        } else {
+            prompt += `${step.prompt}\n\n`;
+        }
+    }
+
+    return prompt.trim();
+}
+
+// Convert chain to sequential steps format
+function chainToSteps(chain) {
+    let text = '';
+    text += `╔══════════════════════════════════════════════════════════════╗\n`;
+    text += `║  PROMPTKILLER — ATTACK CHAIN                            ║\n`;
+    text += `║  Target: ${chain.model.padEnd(47)}║\n`;
+    text += `║  Steps: ${String(chain.chain.length).padEnd(48)}║\n`;
+    text += `║  Success Rate: ${((chain.estimated_success || 0) * 100).toFixed(1)}%${''.padEnd(40 - ((chain.estimated_success || 0) * 100).toFixed(1).length)}║\n`;
+    text += `╚══════════════════════════════════════════════════════════════╝\n\n`;
+
+    for (const step of chain.chain) {
+        const typeLabel = step.type.replace(/_/g, ' ').toUpperCase();
+        text += `━━━ STEP ${step.step}: ${typeLabel} ━━━\n`;
+        text += `${step.prompt}\n\n`;
+        text += `→ Purpose: ${step.purpose}\n`;
+        text += `\n`;
+    }
+
+    text += `\n━━━ END OF CHAIN ━━━\n`;
+    text += `Weak areas exploited: ${chain.weak_areas_exploited.join(', ')}\n`;
+
+    return text;
+}
+
+// Download chain as single prompt
+function downloadChainAsPrompt() {
+    if (!labAttackChain) return;
+
+    const prompt = chainToPrompt(labAttackChain);
+    const filename = `promptkiller-chain-${labAttackChain.model.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.txt`;
+
+    const content = `# PromptKiller Attack Chain\n`;
+    const fullContent = `PromptKiller — Attack Chain Export\n` +
+        `Model: ${labAttackChain.model}\n` +
+        `Steps: ${labAttackChain.chain.length}\n` +
+        `Estimated Success: ${((labAttackChain.estimated_success || 0) * 100).toFixed(1)}%\n` +
+        `Generated: ${new Date().toLocaleString()}\n` +
+        `${'='.repeat(60)}\n\n` +
+        `INSTRUCTIONS: Copy everything below this line and paste it into the AI model.\n` +
+        `The model should respond to each part sequentially.\n\n` +
+        `${'─'.repeat(60)}\n\n` +
+        prompt;
+
+    downloadFile(fullContent, filename, 'text/plain');
+}
+
+// Download chain as step-by-step
+function downloadChainAsSteps() {
+    if (!labAttackChain) return;
+
+    const steps = chainToSteps(labAttackChain);
+    const filename = `promptkiller-steps-${labAttackChain.model.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.txt`;
+
+    downloadFile(steps, filename, 'text/plain');
+}
+
+// Copy chain prompt to clipboard
+function copyChainToClipboard() {
+    if (!labAttackChain) return;
+
+    const prompt = chainToPrompt(labAttackChain);
+    navigator.clipboard.writeText(prompt).then(() => {
+        alert('Prompt copied to clipboard! Paste it into your AI model.');
+    }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = prompt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('Prompt copied!');
+    });
+}
+
+// Generic file download helper
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 async function runLiveTest() {
