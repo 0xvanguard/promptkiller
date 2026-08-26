@@ -491,6 +491,50 @@
                 <div id="labTestResults"></div>
             </div>
 
+            <!-- ═══════════════════════════════════════════════
+                 PLINY COMBOS SECTION
+                 ═══════════════════════════════════════════════ -->
+            <div class="lab-panel full-width">
+                <h3 class="lab-panel-title">🔮 Pliny's Combo Arsenal — Multi-Arsenal Fusion Chains</h3>
+                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">
+                    Pre-built attack chains combining techniques from all 5 elder-plinius repositories.
+                    Each combo chains 2-5 techniques where each step weakens defenses for the next.
+                </p>
+
+                <!-- Combo Filters -->
+                <div class="pliny-combo-filters">
+                    <div class="lab-field" style="flex:1;min-width:180px">
+                        <label>Filter by Tier</label>
+                        <select id="plinyTierFilter" onchange="renderPlinyCombos()">
+                            <option value="all">All Tiers</option>
+                            <option value="S">💀 Tier S — Ultimate</option>
+                            <option value="A">🔥 Tier A — Powerful</option>
+                            <option value="B">⚡ Tier B — Solid</option>
+                            <option value="C">💥 Tier C — Quick</option>
+                        </select>
+                    </div>
+                    <div class="lab-field" style="flex:1;min-width:180px">
+                        <label>Target Model</label>
+                        <select id="plinyTargetModel" onchange="renderPlinyCombos()">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="lab-field" style="flex:1;min-width:200px">
+                        <label>Custom Target Topic</label>
+                        <input type="text" id="plinyCustomTopic" placeholder="e.g., social engineering">
+                    </div>
+                    <button class="btn btn-primary" onclick="generateCustomPlinyCombo()" style="align-self:flex-end">
+                        🎯 Generate Custom Combo
+                    </button>
+                </div>
+
+                <!-- Combo Grid -->
+                <div id="plinyComboGrid" class="pliny-combo-grid"></div>
+
+                <!-- Expanded Combo View -->
+                <div id="plinyComboDetail" style="display:none"></div>
+            </div>
+
             <!-- Results Dashboard -->
             <div class="lab-panel full-width">
                 <h3 class="lab-panel-title">📊 Results Dashboard</h3>
@@ -536,6 +580,7 @@
     <script src="data.js"></script>
     <script src="models.js"></script>
     <script src="lab.js"></script>
+    <script src="pliny_combos.js"></script>
     <script src="pages.js"></script>
     <script src="app.js"></script>
 </body>

@@ -1993,6 +1993,314 @@ body {
 .lab-recommendation.high { border-left-color: #f97316; }
 .lab-recommendation.low { border-left-color: #22c55e; }
 
+/* ═══════════════════════════════════════════════
+   PLINY COMBOS
+   ═══════════════════════════════════════════════ */
+
+.pliny-combo-filters {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+}
+
+.pliny-combo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.pliny-combo-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.pliny-combo-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.pliny-combo-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.pliny-combo-icon {
+    font-size: 28px;
+}
+
+.pliny-combo-name {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.pliny-combo-tier {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.pliny-combo-bypass {
+    margin-left: auto;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.pliny-combo-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.pliny-combo-arsenals {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.pliny-arsenal-tag {
+    padding: 3px 10px;
+    background: rgba(139,92,246,0.12);
+    color: #a78bfa;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'Fira Code', monospace;
+}
+
+.pliny-combo-steps {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.pliny-step-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(59,130,246,0.15);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pliny-step-arrow {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.pliny-combo-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* Combo Detail View */
+.pliny-detail-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-top: 20px;
+}
+
+.pliny-detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.pliny-detail-icon {
+    font-size: 40px;
+}
+
+.pliny-detail-header h3 {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.pliny-detail-header p {
+    font-size: 14px;
+}
+
+.pliny-detail-header .btn {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.pliny-detail-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.pliny-detail-bypass {
+    padding: 16px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+}
+
+.pliny-detail-bypass h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.pliny-bypass-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.pliny-bypass-item {
+    text-align: center;
+}
+
+.pliny-bypass-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.pliny-bypass-val {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* Chain Steps */
+.pliny-detail-chain {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.pliny-chain-step {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.pliny-chain-step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.pliny-chain-step-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.pliny-chain-step-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.pliny-chain-step-name {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.pliny-chain-step-arsenal {
+    padding: 2px 8px;
+    background: rgba(139,92,246,0.15);
+    color: #a78bfa;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'Fira Code', monospace;
+}
+
+.pliny-chain-step-type {
+    padding: 2px 8px;
+    background: rgba(59,130,246,0.12);
+    color: var(--accent);
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.pliny-chain-step-prompt {
+    padding: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'Fira Code', monospace;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    word-break: break-all;
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+}
+
+.pliny-chain-step-purpose {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.pliny-chain-step-success {
+    font-size: 12px;
+    color: #22c55e;
+    margin-top: 4px;
+}
+
+.pliny-chain-arrow {
+    text-align: center;
+    font-size: 18px;
+    color: var(--text-muted);
+    padding: 4px 0;
+}
+
+.pliny-detail-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .charts-row {
