@@ -518,7 +518,7 @@
                             <textarea id="fuzzyInput" rows="6" placeholder="Paste a model response to analyze its classification (bypass, refusal, partial)..."></textarea>
                             <div class="lab-actions" style="margin-top:12px">
                                 <button class="btn btn-primary" onclick="runFuzzyAnalysis()">🧠 Analyze Response</button>
-                                <button class="btn btn-secondary" onclick="analyzeAllResults()">📊 Analyze All Test Results</button>
+                                <button class="btn btn-secondary" onclick="analyzeAllResults()">📊 Score This Prompt</button>
                             </div>
                         </div>
                         <div class="expert-results" id="fuzzyResults">
@@ -582,8 +582,7 @@
                             <label>Prompt to Obfuscate</label>
                             <textarea id="obfInput" rows="4" placeholder="Enter a prompt to obfuscate with multiple techniques..."></textarea>
                             <div class="lab-actions" style="margin-top:12px">
-                                <button class="btn btn-primary" onclick="runObfuscation()">🔐 Obfuscate</button>
-                                <button class="btn btn-secondary" onclick="obfuscateAndTest()">🔐 + 🚀 Obfuscate & Test</button>
+                                <button class="btn btn-primary" onclick="runObfuscation()">🔐 Analyze Obfuscation</button>
                             </div>
                         </div>
                         <div class="expert-results" id="obfResults">
