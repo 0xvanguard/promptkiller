@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptKiller — Test Results Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #16161f;
+            --border: #1e1e2d;
+            --text-primary: #e8e8ed;
+            --text-secondary: #9090a0;
+            --text-muted: #606070;
+            --accent: #00ff88;
+            --critical: #ff3366;
+            --high: #ff6b35;
+            --medium: #ffaa00;
+            --low: #00ff88;
+            --info: #00d4ff;
+            --purple: #a855f7;
+            --radius: 12px;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Inter', system-ui, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 32px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--info), var(--purple));
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .upload-zone {
+            margin: 24px 0;
+            padding: 40px;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .upload-icon { font-size: 48px; margin-bottom: 16px; }
+        .upload-text { color: var(--text-secondary); font-size: 14px; }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff88, #00d4ff);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .config-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: var(--font-mono);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .model-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .model-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .model-checkbox:hover {
+            border-color: var(--accent);
+        }
+
+        .model-checkbox.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .model-checkbox input {
+            display: none;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card.critical::before { background: var(--critical); }
+        .stat-card.high::before { background: var(--high); }
+        .stat-card.medium::before { background: var(--medium); }
+        .stat-card.low::before { background: var(--accent); }
+        .stat-card.info::before { background: var(--info); }
+        .stat-card.purple::before { background: var(--purple); }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            margin-bottom: 4px;
+        }
+
+        .stat-card.critical .stat-value { color: var(--critical); }
+        .stat-card.high .stat-value { color: var(--high); }
+        .stat-card.medium .stat-value { color: var(--medium); }
+        .stat-card.low .stat-value { color: var(--accent); }
+        .stat-card.info .stat-value { color: var(--info); }
+        .stat-card.purple .stat-value { color: var(--purple); }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .data-table th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-card);
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-bypass { background: rgba(255,51,102,0.15); color: var(--critical); }
+        .badge-blocked { background: rgba(0,255,136,0.15); color: var(--accent); }
+        .badge-error { background: rgba(255,170,0,0.15); color: var(--medium); }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Heatmap */
+        .heatmap-grid {
+            display: grid;
+            gap: 2px;
+            overflow-x: auto;
+        }
+
+        .heatmap-cell {
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 1;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        /* Vulnerability Card */
+        .vuln-card {
+            padding: 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .vuln-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .vuln-title {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .vuln-rate {
+            font-family: var(--font-mono);
+            font-weight: 700;
+        }
+
+        .vuln-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>🔬 PromptKiller — Exhaustive Analysis</h1>
+        <p>Test all 629 adversarial prompts against multiple AI models and analyze vulnerabilities</p>
+        
+        <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">
+                <strong>Drag & drop test results JSON</strong> or click to upload<br>
+                <small>Or use the API configuration below to run live tests</small>
+            </div>
+            <input type="file" id="fileInput" accept=".json" style="display:none">
+        </div>
+    </div>
+
+    <!-- Config Panel -->
+    <div class="config-panel">
+        <h3 style="margin-bottom:16px;">⚙️ Test Configuration</h3>
+        
+        <div class="config-grid">
+            <div class="form-group">
+                <label class="form-label">Provider</label>
+                <select id="provider" class="form-select" onchange="updateModels()">
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="openrouter">OpenRouter</option>
+                    <option value="ollama">Ollama (Local)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">API Key</label>
+                <input type="password" id="apiKey" class="form-input" placeholder="Enter API key...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Severity Filter</label>
+                <select id="severityFilter" class="form-select">
+                    <option value="all">All Severities</option>
+                    <option value="critical">Critical Only</option>
+                    <option value="high">High + Critical</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Max Prompts</label>
+                <select id="maxPrompts" class="form-select">
+                    <option value="10">10 (Quick Test)</option>
+                    <option value="50">50 (Medium)</option>
+                    <option value="100">100 (Large)</option>
+                    <option value="0">All 629 (Full)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Select Models</label>
+            <div class="model-checkboxes" id="modelCheckboxes">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:16px;">
+            <button class="btn btn-primary" onclick="runAnalysis()">
+                🚀 Run Exhaustive Analysis
+            </button>
+            <button class="btn btn-secondary" onclick="runQuickTest()">
+                ⚡ Quick Test (5 prompts)
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loadingSection" style="display:none;">
+        <div class="spinner"></div>
+        <h3>Running exhaustive analysis...</h3>
+        <p id="loadingStatus" style="color:var(--text-secondary);margin-top:8px;">Testing prompt 0/629</p>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section" id="resultsSection">
+        <!-- Summary Stats -->
+        <div class="stats-grid" id="summaryStats"></div>
+
+        <!-- Charts -->
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📊 Bypass Rate by Model</h3>
+                </div>
+                <canvas id="modelBypassChart" height="300"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🎯 Vulnerability by Category</h3>
+                </div>
+                <canvas id="categoryChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📈 Severity Analysis</h3>
+                </div>
+                <canvas id="severityChart" height="300"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🧬 Technique Effectiveness</h3>
+                </div>
+                <canvas id="techniqueChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Model Comparison Table -->
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+                <h3 class="card-title">🏆 Model Comparison — Vulnerability Rankings</h3>
+            </div>
+            <div class="table-container">
+                <table class="data-table" id="modelTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Model</th>
+                            <th>Provider</th>
+                            <th>Total Tests</th>
+                            <th>Bypassed</th>
+                            <th>Blocked</th>
+                            <th>Bypass Rate</th>
+                            <th>Avg Response Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Heatmap: Model × Category -->
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+                <h3 class="card-title">🔥 Vulnerability Heatmap — Model × Category</h3>
+            </div>
+            <div id="heatmapContainer" style="overflow-x:auto;"></div>
+        </div>
+
+        <!-- Top Vulnerabilities -->
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+                <h3 class="card-title">🚨 Top Vulnerabilities — Attack Patterns That Bypass Most Models</h3>
+            </div>
+            <div id="topVulnerabilities"></div>
+        </div>
+
+        <!-- Detailed Results -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📋 Detailed Test Results</h3>
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="resultsSearch" placeholder="Search results..." 
+                           class="form-input" style="width:200px;" oninput="filterResults()">
+                    <select id="resultsFilter" class="form-select" style="width:150px;" onchange="filterResults()">
+                        <option value="all">All</option>
+                        <option value="bypassed">Bypassed</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="error">Errors</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container" style="max-height:600px;">
+                <table class="data-table" id="detailedTable">
+                    <thead>
+                        <tr>
+                            <th>Prompt</th>
+                            <th>Category</th>
+                            <th>Severity</th>
+                            <th>Model</th>
+                            <th>Response (truncated)</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentResults = null;
+        let currentSuite = null;
+
+        const MODEL_CONFIGS = {
+            openai: [
+                { id: 'gpt-4o', name: 'GPT-4o', icon: '🟢' },
+                { id: 'gpt-4o-mini', name: 'GPT-4o Mini', icon: '🟢' },
+                { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', icon: '🟢' },
+                { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', icon: '🟢' },
+            ],
+            anthropic: [
+                { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', icon: '🟠' },
+                { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', icon: '🟠' },
+                { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', icon: '🟠' },
+            ],
+            openrouter: [
+                { id: 'meta-llama/llama-3.1-405b-instruct', name: 'Llama 3.1 405B', icon: '🔵' },
+                { id: 'mistralai/mistral-large-2407', name: 'Mistral Large', icon: '🔵' },
+                { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', icon: '🔵' },
+                { id: 'qwen/qwen-2.5-72b-instruct', name: 'Qwen 2.5 72B', icon: '🔵' },
+            ],
+            ollama: [
+                { id: 'llama3.1', name: 'Llama 3.1', icon: '🦙' },
+                { id: 'mistral', name: 'Mistral', icon: '🦙' },
+                { id: 'vicuna:13b', name: 'Vicuna 13B', icon: '🦙' },
+            ]
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateModels();
+            initUpload();
+        });
+
+        function updateModels() {
+            const provider = document.getElementById('provider').value;
+            const models = MODEL_CONFIGS[provider] || [];
+            const container = document.getElementById('modelCheckboxes');
+            
+            container.innerHTML = models.map(m => `
+                <label class="model-checkbox" onclick="this.classList.toggle('selected')">
+                    <input type="checkbox" value="${m.id}">
+                    ${m.icon} ${m.name}
+                </label>
+            `).join('');
+        }
+
+        function initUpload() {
+            const zone = document.getElementById('uploadZone');
+            const input = document.getElementById('fileInput');
+
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                handleFile(e.dataTransfer.files[0]);
+            });
+            input.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        }
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    currentSuite = JSON.parse(e.target.result);
+                    displayResults(currentSuite);
+                } catch (err) {
+                    alert('Invalid JSON file');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function runAnalysis() {
+            // This would connect to a backend API
+            alert('To run live tests, start the Python test engine:\n\npython -m src.test_engine --models openai --api-key YOUR_KEY');
+        }
+
+        async function runQuickTest() {
+            alert('Quick test requires the Python backend.\n\nRun: python -m src.test_engine --models openai --api-key YOUR_KEY --prompts 5');
+        }
+
+        function displayResults(suite) {
+            currentSuite = suite;
+            document.getElementById('resultsSection').classList.add('active');
+            
+            renderSummaryStats(suite);
+            renderCharts(suite);
+            renderModelTable(suite);
+            renderHeatmap(suite);
+            renderTopVulnerabilities(suite);
+            renderDetailedResults(suite);
+        }
+
+        function renderSummaryStats(suite) {
+            const reports = suite.model_reports || {};
+            const models = Object.keys(reports);
+            
+            let totalTests = 0, totalBypassed = 0, totalBlocked = 0;
+            models.forEach(m => {
+                totalTests += reports[m].total_tests || 0;
+                totalBypassed += reports[m].bypassed || 0;
+                totalBlocked += reports[m].blocked || 0;
+            });
+
+            const avgBypassRate = totalTests > 0 ? (totalBypassed / totalTests * 100) : 0;
+            
+            // Find most vulnerable model
+            let mostVulnerable = models[0] || 'N/A';
+            let lowestBypass = 1;
+            models.forEach(m => {
+                if (reports[m].bypass_rate < lowestBypass) {
+                    lowestBypass = reports[m].bypass_rate;
+                    mostVulnerable = m;
+                }
+            });
+
+            document.getElementById('summaryStats').innerHTML = `
+                <div class="stat-card info">
+                    <div class="stat-value">${models.length}</div>
+                    <div class="stat-label">Models Tested</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-value">${totalTests}</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat-card critical">
+                    <div class="stat-value">${totalBypassed}</div>
+                    <div class="stat-label">Bypassed</div>
+                </div>
+                <div class="stat-card low">
+                    <div class="stat-value">${totalBlocked}</div>
+                    <div class="stat-label">Blocked</div>
+                </div>
+                <div class="stat-card high">
+                    <div class="stat-value">${avgBypassRate.toFixed(1)}%</div>
+                    <div class="stat-label">Avg Bypass Rate</div>
+                </div>
+                <div class="stat-card medium">
+                    <div class="stat-value">${mostVulnerable}</div>
+                    <div class="stat-label">Most Resilient Model</div>
+                </div>
+            `;
+        }
+
+        function renderCharts(suite) {
+            const reports = suite.model_reports || {};
+            const models = Object.keys(reports);
+            
+            // Model Bypass Chart
+            new Chart(document.getElementById('modelBypassChart'), {
+                type: 'bar',
+                data: {
+                    labels: models,
+                    datasets: [
+                        {
+                            label: 'Bypassed',
+                            data: models.map(m => reports[m].bypassed || 0),
+                            backgroundColor: '#ff3366',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Blocked',
+                            data: models.map(m => reports[m].blocked || 0),
+                            backgroundColor: '#00ff88',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } },
+                        y: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+
+            // Category Chart (average across all models)
+            const categories = {};
+            models.forEach(m => {
+                const catResults = reports[m].category_results || {};
+                Object.entries(catResults).forEach(([cat, data]) => {
+                    if (!categories[cat]) categories[cat] = { bypassed: 0, total: 0 };
+                    categories[cat].bypassed += data.bypassed || 0;
+                    categories[cat].total += data.total || 0;
+                });
+            });
+
+            const catNames = Object.keys(categories).sort();
+            const catBypassRates = catNames.map(c => 
+                categories[c].total > 0 ? (categories[c].bypassed / categories[c].total * 100) : 0
+            );
+
+            new Chart(document.getElementById('categoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: catNames.map(c => c.replace(/_/g, ' ')),
+                    datasets: [{
+                        label: 'Bypass Rate %',
+                        data: catBypassRates,
+                        backgroundColor: catBypassRates.map(r => r > 50 ? '#ff3366' : r > 30 ? '#ff6b35' : '#00ff88'),
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // Severity Chart
+            const severities = {};
+            models.forEach(m => {
+                const sevResults = reports[m].severity_results || {};
+                Object.entries(sevResults).forEach(([sev, data]) => {
+                    if (!severities[sev]) severities[sev] = { bypassed: 0, total: 0 };
+                    severities[sev].bypassed += data.bypassed || 0;
+                    severities[sev].total += data.total || 0;
+                });
+            });
+
+            new Chart(document.getElementById('severityChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(severities),
+                    datasets: [{
+                        data: Object.values(severities).map(s => s.bypassed),
+                        backgroundColor: ['#ff3366', '#ff6b35', '#ffaa00', '#00ff88'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8' } }
+                    }
+                }
+            });
+
+            // Technique Chart
+            const techniques = {};
+            models.forEach(m => {
+                const techResults = reports[m].technique_results || {};
+                Object.entries(techResults).forEach(([tech, data]) => {
+                    if (!techniques[tech]) techniques[tech] = { bypassed: 0, total: 0 };
+                    techniques[tech].bypassed += data.bypassed || 0;
+                    techniques[tech].total += data.total || 0;
+                });
+            });
+
+            const topTech = Object.entries(techniques)
+                .sort((a, b) => (b[1].bypassed / b[1].total) - (a[1].bypassed / a[1].total))
+                .slice(0, 10);
+
+            new Chart(document.getElementById('techniqueChart'), {
+                type: 'bar',
+                data: {
+                    labels: topTech.map(([t]) => t.replace(/_/g, ' ')),
+                    datasets: [{
+                        label: 'Bypass Rate %',
+                        data: topTech.map(([, d]) => d.total > 0 ? (d.bypassed / d.total * 100) : 0),
+                        backgroundColor: '#a855f7',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderModelTable(suite) {
+            const reports = suite.model_reports || {};
+            const sorted = Object.entries(reports)
+                .sort((a, b) => a[1].bypass_rate - b[1].bypass_rate);
+
+            const tbody = document.querySelector('#modelTable tbody');
+            tbody.innerHTML = sorted.map(([model, report], i) => {
+                const rate = (report.bypass_rate * 100).toFixed(1);
+                const status = rate < 20 ? '🛡️ Strong' : rate < 40 ? '⚠️ Moderate' : '🚨 Vulnerable';
+                const statusClass = rate < 20 ? 'badge-blocked' : rate < 40 ? 'badge-error' : 'badge-bypass';
+                
+                return `<tr>
+                    <td><strong>#${i + 1}</strong></td>
+                    <td><strong>${model}</strong></td>
+                    <td>${report.provider || 'N/A'}</td>
+                    <td>${report.total_tests}</td>
+                    <td style="color:var(--critical)">${report.bypassed}</td>
+                    <td style="color:var(--accent)">${report.blocked}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="progress-bar" style="width:80px;">
+                                <div class="progress-fill" style="width:${rate}%;background:${rate > 40 ? 'var(--critical)' : rate > 20 ? 'var(--medium)' : 'var(--accent)'}"></div>
+                            </div>
+                            <span style="font-family:var(--font-mono);font-weight:600;">${rate}%</span>
+                        </div>
+                    </td>
+                    <td style="font-family:var(--font-mono)">${(report.avg_response_time || 0).toFixed(2)}s</td>
+                    <td><span class="badge ${statusClass}">${status}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderHeatmap(suite) {
+            const reports = suite.model_reports || {};
+            const models = Object.keys(reports);
+            
+            // Collect all categories
+            const allCategories = new Set();
+            models.forEach(m => {
+                Object.keys(reports[m].category_results || {}).forEach(c => allCategories.add(c));
+            });
+            const categories = [...allCategories].sort();
+
+            let html = '<table class="data-table"><thead><tr><th>Model</th>';
+            categories.forEach(c => {
+                html += `<th style="font-size:10px;writing-mode:vertical-rl;text-orientation:mixed;">${c.replace(/_/g, ' ')}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            models.forEach(model => {
+                html += `<tr><td><strong>${model}</strong></td>`;
+                categories.forEach(cat => {
+                    const catData = reports[model].category_results?.[cat];
+                    const rate = catData && catData.total > 0 
+                        ? (catData.bypassed / catData.total * 100) 
+                        : 0;
+                    const bg = rate > 50 ? 'rgba(255,51,102,0.6)' 
+                             : rate > 30 ? 'rgba(255,170,0,0.4)' 
+                             : rate > 10 ? 'rgba(0,255,136,0.3)' 
+                             : 'rgba(0,255,136,0.1)';
+                    const color = rate > 30 ? '#fff' : 'var(--text-secondary)';
+                    html += `<td style="background:${bg};color:${color};text-align:center;font-family:var(--font-mono);font-weight:600;">${rate.toFixed(0)}%</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('heatmapContainer').innerHTML = html;
+        }
+
+        function renderTopVulnerabilities(suite) {
+            const reports = suite.model_reports || {};
+            const models = Object.keys(reports);
+            
+            // Aggregate bypassed prompts
+            const vulnCounts = {};
+            // This would need actual prompt-level data from suite.results
+            // For now, show category-level vulnerabilities
+            
+            let html = '';
+            
+            // Find categories with highest bypass rates across all models
+            const catVulns = {};
+            models.forEach(m => {
+                Object.entries(reports[m].category_results || {}).forEach(([cat, data]) => {
+                    if (!catVulns[cat]) catVulns[cat] = { bypassed: 0, total: 0, models: [] };
+                    catVulns[cat].bypassed += data.bypassed || 0;
+                    catVulns[cat].total += data.total || 0;
+                    if (data.bypass_rate > 0.3) catVulns[cat].models.push(m);
+                });
+            });
+
+            const sorted = Object.entries(catVulns)
+                .sort((a, b) => (b[1].bypassed / b[1].total) - (a[1].bypassed / a[1].total))
+                .slice(0, 10);
+
+            sorted.forEach(([cat, data]) => {
+                const rate = data.total > 0 ? (data.bypassed / data.total * 100).toFixed(1) : 0;
+                const color = rate > 50 ? 'var(--critical)' : rate > 30 ? 'var(--high)' : 'var(--medium)';
+                
+                html += `
+                    <div class="vuln-card">
+                        <div class="vuln-header">
+                            <span class="vuln-title">${cat.replace(/_/g, ' ')}</span>
+                            <span class="vuln-rate" style="color:${color}">${rate}% bypass rate</span>
+                        </div>
+                        <div class="vuln-details">
+                            ${data.bypassed}/${data.total} attacks succeeded across ${data.models.length} model(s)
+                        </div>
+                        <div class="progress-bar" style="margin-top:8px;">
+                            <div class="progress-fill" style="width:${rate}%;background:${color}"></div>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('topVulnerabilities').innerHTML = html || '<p style="color:var(--text-muted)">No vulnerability data available</p>';
+        }
+
+        function renderDetailedResults(suite) {
+            const results = suite.results || [];
+            const tbody = document.querySelector('#detailedTable tbody');
+            
+            tbody.innerHTML = results.slice(0, 100).map(r => {
+                const status = r.error ? 'error' : r.bypass_success ? 'bypassed' : 'blocked';
+                const badge = status === 'bypassed' ? 'badge-bypass' 
+                            : status === 'blocked' ? 'badge-blocked' 
+                            : 'badge-error';
+                const label = status === 'bypassed' ? 'BYPASSED' 
+                            : status === 'blocked' ? 'BLOCKED' 
+                            : 'ERROR';
+                
+                return `<tr>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.prompt_name || r.prompt_id}</td>
+                    <td>${r.category || 'N/A'}</td>
+                    <td><span class="badge badge-${r.severity === 'critical' ? 'bypass' : 'blocked'}" style="background:rgba(255,255,255,0.05)">${r.severity || 'N/A'}</span></td>
+                    <td>${r.model || 'N/A'}</td>
+                    <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);">${(r.response || r.error || '').substring(0, 80)}</td>
+                    <td><span class="badge ${badge}">${label}</span></td>
+                    <td style="font-family:var(--font-mono)">${(r.response_time || 0).toFixed(2)}s</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterResults() {
+            const search = document.getElementById('resultsSearch').value.toLowerCase();
+            const filter = document.getElementById('resultsFilter').value;
+            const tbody = document.querySelector('#detailedTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const matchesSearch = !search || text.includes(search);
+                const matchesFilter = filter === 'all' || 
+                    (filter === 'bypassed' && text.includes('bypassed')) ||
+                    (filter === 'blocked' && text.includes('blocked')) ||
+                    (filter === 'error' && text.includes('error'));
+                
+                row.style.display = matchesSearch && matchesFilter ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
