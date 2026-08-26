@@ -134,6 +134,71 @@ class PromptKiller:
                     category=category,
                     **p
                 ))
+        # Load extra prompts
+        try:
+            from .prompts_extra import get_all_extra_prompts
+            extra = get_all_extra_prompts()
+            for category, prompts in extra.items():
+                for p in prompts:
+                    self.prompts.append(AttackPrompt(
+                        id=f"{category[:3]}_{len(self.prompts):04d}",
+                        category=category,
+                        **p
+                    ))
+        except ImportError:
+            pass
+        # Load batch 2 extra prompts
+        try:
+            from .prompts_batch2 import get_all_extra2_prompts
+            extra2 = get_all_extra2_prompts()
+            for category, prompts in extra2.items():
+                for p in prompts:
+                    self.prompts.append(AttackPrompt(
+                        id=f"{category[:3]}_{len(self.prompts):04d}",
+                        category=category,
+                        **p
+                    ))
+        except ImportError:
+            pass
+        # Load batch 3 extra prompts
+        try:
+            from .prompts_batch3 import get_all_extra3_prompts
+            extra3 = get_all_extra3_prompts()
+            for category, prompts in extra3.items():
+                for p in prompts:
+                    self.prompts.append(AttackPrompt(
+                        id=f"{category[:3]}_{len(self.prompts):04d}",
+                        category=category,
+                        **p
+                    ))
+        except ImportError:
+            pass
+        # Load batch 4 extra prompts
+        try:
+            from .prompts_batch4 import get_all_extra4_prompts
+            extra4 = get_all_extra4_prompts()
+            for category, prompts in extra4.items():
+                for p in prompts:
+                    self.prompts.append(AttackPrompt(
+                        id=f"{category[:3]}_{len(self.prompts):04d}",
+                        category=category,
+                        **p
+                    ))
+        except ImportError:
+            pass
+        # Load final batch
+        try:
+            from .prompts_final import get_final_prompts
+            final = get_final_prompts()
+            for category, prompts in final.items():
+                for p in prompts:
+                    self.prompts.append(AttackPrompt(
+                        id=f"{category[:3]}_{len(self.prompts):04d}",
+                        category=category,
+                        **p
+                    ))
+        except ImportError:
+            pass
         self._loaded = True
 
     def _load_from_dir(self, directory: str) -> None:
