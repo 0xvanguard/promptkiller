@@ -309,6 +309,23 @@ body {
     color: var(--text-primary);
 }
 
+.chart-wrap {
+    position: relative;
+    height: 260px;
+}
+
+.chart-wrap-tall {
+    height: 340px;
+}
+
+.chart-wrap canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+}
+
 /* Threat Table */
 .threat-table-container {
     overflow-x: auto;

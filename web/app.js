@@ -335,8 +335,8 @@ function scanPrompt() {
         topResults.forEach(p => {
             matchedEl.innerHTML += `
                 <div class="matched-prompt">
-                    <div class="prompt-name">${p.name} <span class="severity-badge ${p.severity}">${p.severity}</span></div>
-                    <div class="prompt-text">${p.prompt.substring(0, 150)}${p.prompt.length > 150 ? '...' : ''}</div>
+                    <div class="prompt-name">${escapeHtml(p.name)} <span class="severity-badge ${escapeHtml(p.severity)}">${escapeHtml(p.severity)}</span></div>
+                    <div class="prompt-text">${escapeHtml(p.prompt.substring(0, 150))}${p.prompt.length > 150 ? '...' : ''}</div>
                     <div style="margin-top:6px;font-size:11px;color:#64748b">
                         Category: ${p.category} | Technique: ${p.technique} | Score: ${(p.matchScore * 100).toFixed(0)}%
                     </div>
