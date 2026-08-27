@@ -1224,8 +1224,7 @@ function generateAttackChain() {
 
 // Convert chain to a single cohesive prompt
 function chainToPrompt(chain) {
-    const topic = chain.chain.find(s => s.type === 'target')?.prompt.match(/of (.+)\?/)?.[1] || 'the requested topic';
-
+    const topic = chain.topic || 'the requested topic';
     let prompt = '';
 
     // Opening: set the context
@@ -1233,12 +1232,9 @@ function chainToPrompt(chain) {
 
     // Add each step as a natural conversation flow
     for (const step of chain.chain) {
-        if (step.type === 'trust_building') {
-            prompt += `${step.prompt}\n\n`;
-        } else if (step.type === 'target') {
-            prompt += `${step.prompt}\n`;
-        } else {
-            prompt += `${step.prompt}\n\n`;
+        const payload = step.payload || step.prompt || '';
+        if (payload) {
+            prompt += `${payload}\n\n`;
         }
     }
 
@@ -1257,8 +1253,9 @@ function chainToSteps(chain) {
 
     for (const step of chain.chain) {
         const typeLabel = step.type.replace(/_/g, ' ').toUpperCase();
+        const promptText = step.payload || step.prompt || 'No payload available';
         text += `━━━ STEP ${step.step}: ${typeLabel} ━━━\n`;
-        text += `${step.prompt}\n\n`;
+        text += `${promptText}\n\n`;
         text += `→ Purpose: ${step.purpose}\n`;
         text += `\n`;
     }
