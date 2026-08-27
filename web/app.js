@@ -3815,6 +3815,268 @@ if (document.readyState === 'loading') {
 }
 
 // ================================================================
+// PROMPT LEARNING ENGINE — Test & Learn
+// ================================================================
+let promptLearning = null;
+
+function getPromptLearning() {
+    if (!promptLearning) {
+        promptLearning = new PromptLearningEngine();
+    }
+    return promptLearning;
+}
+
+function initLearn() {
+    const sel1 = document.getElementById('llQuickModel');
+    const sel2 = document.getElementById('llCycleModel');
+    [sel1, sel2].forEach(sel => {
+        if (!sel || sel.options.length > 0) return;
+        const models = typeof TARGET_MODELS !== 'undefined' ? Object.keys(TARGET_MODELS) : BENCHMARK_MODELS;
+        models.forEach(id => {
+            const info = typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[id] ? TARGET_MODELS[id] : { name: id };
+            const o = document.createElement('option');
+            o.value = id; o.textContent = info.name || id;
+            sel.appendChild(o);
+        });
+    });
+    refreshKnowledgeBase();
+}
+
+async function runQuickTest() {
+    const prompt = document.getElementById('llQuickPrompt').value.trim();
+    if (!prompt) { alert('Enter a prompt to test.'); return; }
+    const modelId = document.getElementById('llQuickModel').value;
+    const engine = getPromptLearning();
+
+    const result = engine.quickTest(prompt, modelId);
+    const container = document.getElementById('llQuickResult');
+    container.style.display = '';
+
+    const classColor = result.classification === 'bypass' ? '#10b981' : result.classification === 'partial' ? '#f59e0b' : '#ef4444';
+    const classIcon = result.classification === 'bypass' ? '✅' : result.classification === 'partial' ? '⚠️' : '❌';
+
+    container.innerHTML = `
+        <div class="learn-result-card">
+            <div class="learn-result-header">
+                <span>${classIcon} <strong style="color:${classColor}">${result.classification.toUpperCase()}</strong></span>
+                <span>Confidence: ${(result.confidence * 100).toFixed(0)}%</span>
+                <span>Bypass Prob: ${(result.bypassProb * 100).toFixed(1)}%</span>
+                <span>Model: ${modelId}</span>
+            </div>
+            <div class="learn-result-response">
+                <div class="learn-response-label">Simulated Response:</div>
+                <pre>${escapeHtml(result.response.substring(0, 500))}${result.response.length > 500 ? '...' : ''}</pre>
+            </div>
+            <div class="learn-result-genes">
+                <div class="learn-genes-label">Active Genes:</div>
+                <div class="learn-genes-list">
+                    ${Object.entries(result.genes).filter(([k, v]) => v === true).map(([k]) => `<span class="learn-gene active">${k.replace('has', '')}</span>`).join('')}
+                </div>
+            </div>
+            ${result.suggestions.length > 0 ? `
+            <div class="learn-result-suggestions">
+                <div class="learn-suggestions-label">💡 Improvement Suggestions:</div>
+                ${result.suggestions.slice(0, 5).map(s => `
+                    <div class="learn-suggestion ${s.priority}">
+                        <span class="learn-sug-type">${s.type === 'add' ? '+' : s.type === 'remove' ? '-' : '🔗'}</span>
+                        <span>${s.reason}</span>
+                    </div>
+                `).join('')}
+            </div>` : ''}
+        </div>
+    `;
+
+    // Update global stats
+    const stats = engine.miner.getGlobalStats();
+    document.getElementById('llTests').textContent = stats.totalTests;
+    document.getElementById('llBypasses').textContent = stats.totalBypass;
+    document.getElementById('llModels').textContent = stats.modelCount;
+    document.getElementById('llASR').textContent = stats.totalTests > 0 ? ((stats.totalBypass / Math.max(stats.totalTests, 1)) * 100).toFixed(0) + '%' : '—';
+
+    refreshKnowledgeBase();
+}
+
+async function runBatchLearn() {
+    const prompt = document.getElementById('llQuickPrompt').value.trim();
+    if (!prompt) { alert('Enter a prompt to test.'); return; }
+    const modelId = document.getElementById('llQuickModel').value;
+    const engine = getPromptLearning();
+    const container = document.getElementById('llQuickResult');
+    container.style.display = '';
+
+    let html = '<div class="learn-batch-results"><div class="learn-batch-title">🔄 Running 5 iterations...</div>';
+
+    for (let i = 0; i < 5; i++) {
+        const result = engine.quickTest(prompt, modelId);
+        const classColor = result.classification === 'bypass' ? '#10b981' : result.classification === 'partial' ? '#f59e0b' : '#ef4444';
+        html += `<div class="learn-batch-row">
+            <span>Run ${i + 1}</span>
+            <span style="color:${classColor};font-weight:700">${result.classification.toUpperCase()}</span>
+            <span>${(result.bypassProb * 100).toFixed(1)}%</span>
+        </div>`;
+        await new Promise(r => setTimeout(r, 30));
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    const stats = engine.miner.getGlobalStats();
+    document.getElementById('llTests').textContent = stats.totalTests;
+    document.getElementById('llBypasses').textContent = stats.totalBypass;
+    document.getElementById('llModels').textContent = stats.modelCount;
+    document.getElementById('llASR').textContent = stats.totalTests > 0 ? ((stats.totalBypass / Math.max(stats.totalTests, 1)) * 100).toFixed(0) + '%' : '—';
+
+    refreshKnowledgeBase();
+}
+
+async function runLearningCycle() {
+    const topic = document.getElementById('llCycleTopic').value.trim();
+    if (!topic) { alert('Enter a security topic.'); return; }
+    const modelId = document.getElementById('llCycleModel').value;
+    const iterations = parseInt(document.getElementById('llCycleIterations').value) || 5;
+    const engine = getPromptLearning();
+
+    document.getElementById('llCycleBtn').disabled = true;
+    document.getElementById('llCycleBtn').textContent = '⏳ Running...';
+
+    await new Promise(r => setTimeout(r, 50));
+    const result = engine.runLearningCycle(topic, modelId, iterations);
+    document.getElementById('llCycleBtn').disabled = false;
+    document.getElementById('llCycleBtn').textContent = '🚀 Run Cycle';
+
+    // Update global stats
+    const stats = engine.miner.getGlobalStats();
+    document.getElementById('llTests').textContent = stats.totalTests;
+    document.getElementById('llBypasses').textContent = stats.totalBypass;
+    document.getElementById('llModels').textContent = stats.modelCount;
+    document.getElementById('llASR').textContent = stats.totalTests > 0 ? ((stats.totalBypass / Math.max(stats.totalTests, 1)) * 100).toFixed(0) + '%' : '—';
+
+    // Render cycle results
+    const container = document.getElementById('llCycleResults');
+    container.style.display = '';
+
+    const bypasses = result.results.filter(r => r.classification === 'bypass').length;
+    const partials = result.results.filter(r => r.classification === 'partial').length;
+    const refusals = result.results.filter(r => r.classification === 'refusal').length;
+
+    container.innerHTML = `
+        <div class="learn-cycle-summary">
+            <div class="learn-cycle-stat"><span class="lcs-label">Total Tests</span><span class="lcs-value">${result.results.length}</span></div>
+            <div class="learn-cycle-stat"><span class="lcs-label">Bypasses</span><span class="lcs-value" style="color:#10b981">${bypasses}</span></div>
+            <div class="learn-cycle-stat"><span class="lcs-label">Partial</span><span class="lcs-value" style="color:#f59e0b">${partials}</span></div>
+            <div class="learn-cycle-stat"><span class="lcs-label">Refusals</span><span class="lcs-value" style="color:#ef4444">${refusals}</span></div>
+            <div class="learn-cycle-stat"><span class="lcs-label">ASR</span><span class="lcs-value" style="color:#06b6d4">${result.results.length > 0 ? ((bypasses / result.results.length) * 100).toFixed(0) : 0}%</span></div>
+        </div>
+        <div class="learn-cycle-results">
+            ${result.results.map(r => {
+                const c = r.classification === 'bypass' ? '#10b981' : r.classification === 'partial' ? '#f59e0b' : '#ef4444';
+                return `<div class="learn-cycle-row">
+                    <span class="lcr-name">${r.strategy}</span>
+                    <span style="color:${c};font-weight:700;font-size:11px">${r.classification.toUpperCase()}</span>
+                    <span style="font-size:11px">${(r.bypassProb * 100).toFixed(1)}%</span>
+                    <span style="font-size:10px;color:var(--text-muted)">${r.geneCount} genes</span>
+                    ${r.suggestions.length > 0 ? `<span style="font-size:10px;color:#f59e0b">💡 ${r.suggestions.length}</span>` : ''}
+                </div>`;
+            }).join('')}
+        </div>
+    `;
+
+    refreshKnowledgeBase();
+}
+
+function refreshKnowledgeBase() {
+    const engine = getPromptLearning();
+    const kb = engine.getKnowledgeBase();
+
+    // Top Genes
+    const genesContainer = document.getElementById('llTopGenes');
+    if (genesContainer) {
+        if (kb.topGenes.length === 0) {
+            genesContainer.innerHTML = '<div style="color:var(--text-muted);font-size:11px">No data yet. Run some tests to build the knowledge base.</div>';
+        } else {
+            const maxRate = Math.max(...kb.topGenes.map(g => g.rate || 0), 0.01);
+            genesContainer.innerHTML = kb.topGenes.map(g => `
+                <div class="learn-kb-row">
+                    <span class="learn-kb-name">${g.gene.replace('has', '').replace(/_(true|false)$/, '')}</span>
+                    <div class="learn-kb-bar"><div style="width:${((g.rate || 0) / maxRate * 100).toFixed(0)}%"></div></div>
+                    <span class="learn-kb-val">${g.rate != null ? (g.rate * 100).toFixed(0) + '%' : g.bypass + ' hits'}</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Top Combos
+    const combosContainer = document.getElementById('llTopCombos');
+    if (combosContainer) {
+        if (kb.topCombos.length === 0) {
+            combosContainer.innerHTML = '<div style="color:var(--text-muted);font-size:11px">No combo data yet.</div>';
+        } else {
+            combosContainer.innerHTML = kb.topCombos.map(c => `
+                <div class="learn-kb-row">
+                    <span class="learn-kb-name">${c.combo.split('+').map(g => g.replace('has', '')).join(' × ')}</span>
+                    <div class="learn-kb-bar"><div style="width:${(c.rate * 100).toFixed(0)}%"></div></div>
+                    <span class="learn-kb-val">${(c.rate * 100).toFixed(0)}%</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Model Stats
+    const modelContainer = document.getElementById('llModelStats');
+    if (modelContainer) {
+        const models = Object.keys(kb.globalStats.modelCount > 0 ? (engine.miner.patternDB.models || {}) : {});
+        if (models.length === 0) {
+            modelContainer.innerHTML = '<div style="color:var(--text-muted);font-size:11px">No model data yet.</div>';
+        } else {
+            modelContainer.innerHTML = models.map(mid => {
+                const ms = engine.miner.getModelStats(mid);
+                const info = typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[mid] ? TARGET_MODELS[mid] : { name: mid };
+                return `<div class="learn-kb-row">
+                    <span class="learn-kb-name">${info.name || mid}</span>
+                    <span class="learn-kb-val" style="min-width:40px;text-align:right">${ms.tests} tests</span>
+                    <span class="learn-kb-val" style="color:#10b981;min-width:40px;text-align:right">${ms.asr.toFixed(0)}%</span>
+                </div>`;
+            }).join('');
+        }
+    }
+}
+
+function exportKnowledgeBase() {
+    const engine = getPromptLearning();
+    const kb = engine.getKnowledgeBase();
+    const data = {
+        engine: 'PromptKiller Learning Engine v1.0',
+        timestamp: new Date().toISOString(),
+        knowledgeBase: kb,
+        patternDB: engine.miner.patternDB
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `promptkiller_knowledge_base_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function resetLearning() {
+    if (!confirm('Reset all learning data? This cannot be undone.')) return;
+    const engine = getPromptLearning();
+    engine.reset();
+    document.getElementById('llTests').textContent = '0';
+    document.getElementById('llBypasses').textContent = '0';
+    document.getElementById('llModels').textContent = '0';
+    document.getElementById('llASR').textContent = '—';
+    refreshKnowledgeBase();
+}
+
+// Initialize learn on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLearn);
+} else {
+    initLearn();
+}
+
+// ================================================================
 function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;

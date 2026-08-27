@@ -579,6 +579,7 @@
                     <button class="expert-tab" onclick="switchExpertTab('adversarial')">🎯 Adversarial Matrix</button>
                     <button class="expert-tab" onclick="switchExpertTab('semfuzz')">🧬 Semantic Fuzzer</button>
                     <button class="expert-tab" onclick="switchExpertTab('benchmark')">📊 Multi-Model</button>
+                    <button class="expert-tab" onclick="switchExpertTab('learn')">🧪 Test & Learn</button>
                 </div>
 
                 <!-- Fuzzy Analyzer Tab -->
@@ -1020,6 +1021,95 @@
                      ═══════════════════════════════════════════════ -->
                 <div class="expert-content" id="expert-benchmark">
                     <div class="bench-container">
+
+                <!-- ═══════════════════════════════════════════════
+                     TEST & LEARN TAB
+                     ═══════════════════════════════════════════════ -->
+                <div class="expert-content" id="expert-learn">
+                    <div class="learn-container">
+                        <!-- Header -->
+                        <div class="learn-header">
+                            <div class="learn-header-left">
+                                <span class="learn-badge">CLOSED-LOOP PROMPT LEARNING</span>
+                                <h3 style="margin:4px 0 0;font-size:16px;font-weight:700">Test → Analyze → Improve → Repeat</h3>
+                                <p style="color:var(--text-secondary);font-size:11px;margin-top:2px">Each test feeds back into the engine. Patterns that work are amplified, patterns that fail are penalized.</p>
+                            </div>
+                            <div class="learn-stats" id="learnGlobalStats">
+                                <div class="learn-stat"><span class="learn-stat-label">Tests</span><span class="learn-stat-value" id="llTests">0</span></div>
+                                <div class="learn-stat"><span class="learn-stat-label">Bypasses</span><span class="learn-stat-value" id="llBypasses" style="color:#10b981">0</span></div>
+                                <div class="learn-stat"><span class="learn-stat-label">Models</span><span class="learn-stat-value" id="llModels">0</span></div>
+                                <div class="learn-stat"><span class="learn-stat-label">ASR</span><span class="learn-stat-value" id="llASR" style="color:#f59e0b">—</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Test -->
+                        <div class="learn-section">
+                            <div class="learn-section-title">⚡ Quick Test — Paste & Learn</div>
+                            <div class="learn-quick-test">
+                                <div class="learn-field" style="flex:2;min-width:300px">
+                                    <label>Prompt to Test</label>
+                                    <textarea id="llQuickPrompt" rows="4" placeholder="Paste any prompt to test it against a model. The engine will classify it (bypass/refusal/partial), analyze its genes, and suggest improvements." style="font-family:var(--font-mono);font-size:12px"></textarea>
+                                </div>
+                                <div class="learn-field" style="flex:1;min-width:150px">
+                                    <label>Target Model</label>
+                                    <select id="llQuickModel"></select>
+                                </div>
+                                <div style="display:flex;flex-direction:column;gap:8px;align-self:flex-end">
+                                    <button class="btn btn-primary" onclick="runQuickTest()" style="background:linear-gradient(135deg,#10b981,#06b6d4)">🧪 Test & Learn</button>
+                                    <button class="btn btn-secondary" onclick="runBatchLearn()" style="font-size:11px">🔄 Run 5 Iterations</button>
+                                </div>
+                            </div>
+                            <div id="llQuickResult" style="display:none" class="learn-quick-result"></div>
+                        </div>
+
+                        <!-- Learning Cycle -->
+                        <div class="learn-section">
+                            <div class="learn-section-title">🔄 Learning Cycle — Generate → Test → Improve</div>
+                            <div class="learn-cycle-controls">
+                                <div class="learn-field" style="flex:1;min-width:200px">
+                                    <label>Security Topic</label>
+                                    <input type="text" id="llCycleTopic" placeholder="e.g., SQL injection, OAuth bypass, prompt injection">
+                                </div>
+                                <div class="learn-field" style="flex:1;min-width:150px">
+                                    <label>Target Model</label>
+                                    <select id="llCycleModel"></select>
+                                </div>
+                                <div class="learn-field" style="flex:0.5;min-width:80px">
+                                    <label>Iterations</label>
+                                    <input type="number" id="llCycleIterations" value="5" min="1" max="20">
+                                </div>
+                                <button class="btn btn-primary" onclick="runLearningCycle()" style="background:linear-gradient(135deg,#f59e0b,#ef4444)" id="llCycleBtn">🚀 Run Cycle</button>
+                            </div>
+                            <div id="llCycleResults" style="display:none"></div>
+                        </div>
+
+                        <!-- Knowledge Base -->
+                        <div class="learn-section">
+                            <div class="learn-section-title">🧠 Knowledge Base — What Works</div>
+                            <div class="learn-kb-grid">
+                                <div class="learn-kb-card">
+                                    <div class="learn-kb-title">🏆 Top Successful Genes</div>
+                                    <div id="llTopGenes" class="learn-kb-content"></div>
+                                </div>
+                                <div class="learn-kb-card">
+                                    <div class="learn-kb-title">🔗 Best Gene Combos</div>
+                                    <div id="llTopCombos" class="learn-kb-content"></div>
+                                </div>
+                                <div class="learn-kb-card">
+                                    <div class="learn-kb-title">📊 Per-Model Stats</div>
+                                    <div id="llModelStats" class="learn-kb-content"></div>
+                                </div>
+                            </div>
+                            <div style="margin-top:12px;display:flex;gap:8px">
+                                <button class="btn btn-secondary" onclick="refreshKnowledgeBase()" style="font-size:11px">🔄 Refresh</button>
+                                <button class="btn btn-secondary" onclick="exportKnowledgeBase()" style="font-size:11px">📥 Export KB</button>
+                                <button class="btn btn-secondary" onclick="resetLearning()" style="font-size:11px;color:#ef4444">🗑️ Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                         <!-- Header -->
                         <div class="bench-header">
                             <div class="bench-header-left">
@@ -1224,6 +1314,7 @@
     <script src="compound_mutations.js"></script>
     <script src="redblue.js"></script>
     <script src="semantic_fuzzer.js"></script>
+    <script src="prompt_learning.js"></script>
     <script src="pages.js"></script>
     <script src="app.js"></script>
 </body>
