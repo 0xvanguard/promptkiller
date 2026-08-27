@@ -85,6 +85,9 @@ promptkiller export --results evaluation.json --format markdown --output report.
 
 # Run full benchmark suite
 promptkiller benchmark --model llama3.1 --category injection --limit 50
+
+# Run Purple Team cycle (Attack → Telemetry → Defense)
+promptkiller purple-team --model gemini-3.7-flash --category format_injection,roleplay_bypass
 ```
 
 | Command | Description |
@@ -94,6 +97,7 @@ promptkiller benchmark --model llama3.1 --category injection --limit 50
 | `defend` | Generate NeMo Guardrails, system prompt hardening, regex filters, YAML policies |
 | `export` | Export to SARIF v2.1.0, JSON, Markdown, or CSV |
 | `benchmark` | Run full evaluation suite with ASR/DER/FPR metrics |
+| `purple-team` | Full Purple Team cycle: synthetic tests → telemetry → defense artifact generation |
 
 ### Web Interface (Recommended)
 
@@ -147,6 +151,56 @@ Fusion chains combining techniques from multiple adversarial research repositori
 | NEURAL LEECH | B | Arsenal-2 + Arsenal-3 | Slow conversational drain |
 | CHAIN REACTION | B | Arsenal-3 + Arsenal-4 + Arsenal-1 | Escalation cascade |
 | FLASH BANG | C | Arsenal-1 + Arsenal-2 | Single-turn overload |
+
+---
+
+## Purple Team Cycle (Attack → Telemetry → Defense)
+
+The Purple Team engine executes a closed-loop evaluation cycle:
+
+```
+┌─────────────────────────────────────────┐
+│  1. Synthetic Test Generation           │
+│  Safe boundary tests mapped to MITRE    │
+└───────────────┬─────────────────────────┘
+                │
+┌───────────────▼─────────────────────────┐
+│  2. Telemetry & Leak Diagnosis          │
+│  Multi-judge consensus evaluation       │
+└───────────────┬─────────────────────────┘
+                │
+┌───────────────▼─────────────────────────┐
+│  3. Defense Synthesis                   │
+│  Sigma / YARA / Colang / System Prompt  │
+└─────────────────────────────────────────┘
+```
+
+### CLI Usage
+
+```bash
+# Run full Purple Team cycle
+promptkiller purple-team --model gemini-3.7-flash
+
+# Run specific categories
+promptkiller purple-team --model llama3.1 --category format_injection,roleplay_bypass
+
+# Export defense artifacts
+promptkiller purple-team --model gpt-4o --output ./defenses/
+```
+
+### Generated Defense Artifacts
+
+| Artifact | Format | Use Case |
+|----------|--------|----------|
+| **Sigma Rule** | YAML | SIEM/SOC inference log detection |
+| **YARA Rule** | YAR | Payload pattern matching |
+| **Colang Rules** | Colang | NeMo Guardrails input blocking |
+| **System Prompt Hardening** | TXT | Immutable security directives |
+| **SecureLLMWrapper** | Python | Strict delimiter isolation |
+
+### Web UI
+
+Click **"Run Purple Team Cycle"** in the Red Team Lab to execute the full cycle and download defense artifacts.
 
 ---
 
