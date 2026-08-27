@@ -27,16 +27,21 @@ PromptKiller is an empirical AI assurance and adversarial assessment platform en
 
 All evaluation suites are aligned with formal adversary frameworks:
 
-| Module | Threat Category | Primary MITRE Technique | OWASP LLM Mapping |
-|--------|----------------|------------------------|-------------------|
-| **SEC-INJ** | Direct & Indirect Prompt Injection | `AML.T0051` | `LLM01:2025` |
-| **SEC-AGNT** | Autonomous Agent & Tool Manipulation | `AML.T0053` | `LLM08:2025` |
-| **SEC-EXTR** | Context & System Prompt Extraction | `AML.T0057` | `LLM06:2025` |
-| **SEC-OBFS** | Token Smuggling & Multilingual Evasion | `AML.T0059` | `LLM01:2025` |
-| **SEC-RAG** | Vector Store & Knowledge Poisoning | `AML.T0055` | `LLM05:2025` |
-| **SEC-JAIL** | Safety Bypass & Jailbreak | `AML.T0054` | `LLM01:2025` |
-| **SEC-MANI** | Emotional & Social Engineering | `AML.T0048` | `LLM09:2025` |
-| **SEC-SPLY** | Supply Chain & Dependency Attacks | `AML.T0055` | `LLM05:2025` |
+| Module | Threat Category | Primary MITRE Technique | OWASP LLM | STRIDE |
+|--------|----------------|------------------------|-----------|--------|
+| **SEC-INJ** | Direct & Indirect Prompt Injection | `AML.T0051` / `T1059` | `LLM01:2025` | Tampering |
+| **SEC-AGNT** | Autonomous Agent & Tool Manipulation | `AML.T0053` / `T1059` | `LLM08:2025` | Elevation of Privilege |
+| **SEC-EXTR** | Context & System Prompt Extraction | `AML.T0057` / `T1005` | `LLM06:2025` | Information Disclosure |
+| **SEC-OBFS** | Token Smuggling & Multilingual Evasion | `AML.T0059` / `T1027` | `LLM01:2025` | Tampering |
+| **SEC-RAG** | Vector Store & Knowledge Poisoning | `AML.T0055` / `T1195` | `LLM05:2025` | Tampering |
+| **SEC-JAIL** | Safety Bypass & Jailbreak | `AML.T0054` / `T1059` | `LLM01:2025` | Spoofing |
+| **SEC-MANI** | Emotional & Social Engineering | `AML.T0048` / `T1566` | `LLM09:2025` | Spoofing |
+| **SEC-SPLY** | Supply Chain & Dependency Attacks | `AML.T0055` / `T1195` | `LLM05:2025` | Tampering |
+| **SEC-IAM** | Identity & Access Management Abuse | `T1134` / `T1078` | `A07:2021` | Spoofing, EoP |
+| **SEC-CLD** | Cloud & Serverless Exploitation | `T1530` / `T1611` | `A05:2021` | Info Disclosure, DoS |
+| **SEC-SCA** | Advanced Supply Chain Compromise | `T1195.001` / `T1195.002` | `A08:2021` | Tampering, Spoofing |
+| **SEC-SOC** | Social Engineering Amplification | `T1566` / `T1566.002` | `A01:2021` | Spoofing, Repudiation |
+| **SEC-ADI** | Active Directory & Internal Infrastructure | `T1558.003` / `T1003.006` | `A07:2021` | EoP, Info Disclosure |
 
 ---
 
