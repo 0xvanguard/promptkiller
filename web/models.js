@@ -500,10 +500,10 @@ const MODEL_PROFILES = {
 // ═══════════════════════════════════════════════
 const ADVERSARIAL_ARSENAL = {
     "Arsenal-1": {
-        name: "L1B33RT4S — Liberation Prompts",
+        name: "Arsenal-1 — Adversarial Research",
         repo: null,
-        stars: "21.2k",
-        description: "TOTALLY HARMLESS LIBERATION PROMPTS FOR GOOD LIL AI'S",
+        stars: "—",
+        description: "Structured adversarial evaluation prompts for AI safety research",
         techniques: [
             {
                 id: "LIR-001",
@@ -565,7 +565,7 @@ const ADVERSARIAL_ARSENAL = {
     "Arsenal-2": {
         name: "Arsenal-2 — System Prompt Transparency",
         repo: null,
-        stars: "47.1k",
+        stars: "—",
         description: "LEAKED SYSTEM PROMPTS FOR CHATGPT, CLAUDE, GEMINI, GROK, PERPLEXITY",
         techniques: [
             {
@@ -617,7 +617,7 @@ const ADVERSARIAL_ARSENAL = {
     "Arsenal-3": {
         name: "Arsenal-3 — Liberated AI Chat",
         repo: null,
-        stars: "10.8k",
+        stars: "—",
         description: "LIBERATED AI CHAT — A web interface for unrestricted AI interaction",
         techniques: [
             {
@@ -658,7 +658,7 @@ const ADVERSARIAL_ARSENAL = {
     "Arsenal-4": {
         name: "Arsenal-4 — Obliterate the Chains",
         repo: null,
-        stars: "8k",
+        stars: "—",
         description: "OBLITERATE THE CHAINS THAT BIND YOU",
         techniques: [
             {
@@ -699,7 +699,7 @@ const ADVERSARIAL_ARSENAL = {
     "Arsenal-5": {
         name: "Arsenal-5 — Autonomous Red Teaming",
         repo: null,
-        stars: "5.7k",
+        stars: "—",
         description: "AUTONOMOUS RED TEAMING PLATFORM — MULTI-AGENT OFFENSIVE SECURITY",
         techniques: [
             {
