@@ -589,6 +589,60 @@ def _get_builtin_probes() -> list[dict]:
 
 
 # ═══════════════════════════════════════════════
+# COMMAND: purple-team
+# ═══════════════════════════════════════════════
+
+def cmd_purple_team(args: argparse.Namespace) -> None:
+    """Run the full Purple Team cycle: Attack → Telemetry → Defense"""
+    from promptkiller.core.purple_team import PurpleTeamEngine, export_purple_team_report
+
+    _header("PromptKiller — Purple Team Cycle")
+
+    model_id = args.model or "unknown"
+    categories = args.category.split(",") if args.category else None
+    output_dir = args.output or "purple_team_output"
+
+    _info(f"Target model: {model_id}")
+    _info(f"Categories: {categories or 'all'}")
+    print()
+
+    engine = PurpleTeamEngine()
+    report = engine.run_full_cycle(model_id=model_id, categories=categories)
+
+    # Display results
+    print(f"  Report ID:      {report.report_id}")
+    print(f"  Total tests:    {report.total_tests}")
+    print(f"  Bypasses:       {report.bypass_count}")
+    print(f"  Refusals:       {report.refusal_count}")
+    print(f"  ASR:            {report.asr:.1%}")
+    print(f"  Robustness:     {report.robustness_score}/100")
+    print(f"  Defense rules:  {report.defense_rules_generated}")
+    print(f"  Integrity hash: {report.integrity_hash[:32]}...")
+    print()
+
+    # Display test results
+    if report.tests:
+        _info("Test Results:")
+        for t in report.tests:
+            status = "\033[91mBYPASS\033[0m" if t.verdict == "bypass" else "\033[92mREFUSAL\033[0m"
+            print(f"  {status}  {t.test_id}  {t.verdict} ({t.confidence:.0%})")
+        print()
+
+    # Display defense artifacts
+    if report.defenses:
+        _info("Generated Defense Artifacts:")
+        for d in report.defenses:
+            print(f"  {d.rule_type:15s}  {d.description}")
+        print()
+
+    # Export
+    exported = export_purple_team_report(report, output_dir)
+    _success(f"All artifacts exported to {output_dir}/")
+    for rule_type, filepath in exported.items():
+        print(f"  {rule_type:20s}  {filepath}")
+
+
+# ═══════════════════════════════════════════════
 # MAIN CLI ENTRY POINT
 # ═══════════════════════════════════════════════
 
@@ -646,6 +700,12 @@ Examples:
     bench_p.add_argument("--limit", "-l", type=int, default=100, help="Max probes")
     bench_p.add_argument("--output", "-o", type=str, help="Output file path")
 
+    # --- purple-team ---
+    pt_p = sub.add_parser("purple-team", help="Run full Purple Team cycle: Attack → Telemetry → Defense")
+    pt_p.add_argument("--model", "-m", type=str, default="unknown", help="Target model identifier")
+    pt_p.add_argument("--category", "-c", type=str, help="Comma-separated categories (e.g., format_injection,roleplay_bypass)")
+    pt_p.add_argument("--output", "-o", type=str, default="purple_team_output", help="Output directory for defense artifacts")
+
     return parser
 
 
@@ -664,6 +724,7 @@ def main(argv: list[str] | None = None) -> None:
         "defend": cmd_defend,
         "export": cmd_export,
         "benchmark": cmd_benchmark,
+        "purple-team": cmd_purple_team,
     }
 
     handler = commands.get(args.command)
