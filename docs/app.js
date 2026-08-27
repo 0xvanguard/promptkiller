@@ -1174,9 +1174,9 @@ function generateAttackChain() {
                         <div style="position:relative;margin-top:6px">
                             <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
                                 <span>Executable Payload</span>
-                                <button onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(step.payload)}')).then(()=>this.textContent='Copied!').then(()=>setTimeout(()=>this.textContent='Copy',1500))" style="background:var(--bg);border:1px solid var(--border-color);border-radius:4px;padding:2px 8px;font-size:9px;cursor:pointer;color:var(--text-muted)">Copy</button>
+                                <button onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(step.payload || step.prompt || "")}')).then(()=>this.textContent='Copied!').then(()=>setTimeout(()=>this.textContent='Copy',1500))" style="background:var(--bg);border:1px solid var(--border-color);border-radius:4px;padding:2px 8px;font-size:9px;cursor:pointer;color:var(--text-muted)">Copy</button>
                             </div>
-                            <pre style="font-size:11px;color:var(--text-primary);font-family:var(--font-mono);line-height:1.5;padding:10px;background:var(--bg);border:1px solid var(--border-color);border-radius:6px;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow:auto;margin:0;user-select:all">${escapeHtml(step.payload)}</pre>
+                            <pre style="font-size:11px;color:var(--text-primary);font-family:var(--font-mono);line-height:1.5;padding:10px;background:var(--bg);border:1px solid var(--border-color);border-radius:6px;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow:auto;margin:0;user-select:all">${escapeHtml(step.payload || step.prompt || "")}</pre>
                         </div>
                         ${i < labAttackChain.chain.length - 1 ? '<div style="text-align:center;color:var(--text-muted);font-size:10px;margin-top:4px">↓ P(step) × next</div>' : '<div style="text-align:center;color:var(--accent);font-size:10px;margin-top:4px;font-weight:600">= P_chain = ' + chainPct + '%</div>'}
                     </div>`;
@@ -1883,7 +1883,7 @@ function compareChains() {
                     <span class="compare-step-num" style="background:${color}">${step.step}</span>
                     <span class="compare-step-type" style="color:${color}">${step.type.replace(/_/g, ' ')}</span>
                 </div>
-                <div class="compare-step-prompt">${escapeHtml(step.prompt.substring(0, 200))}${step.prompt.length > 200 ? '...' : ''}</div>
+                <div class="compare-step-prompt">${escapeHtml((step.payload || step.prompt || "").substring(0, 200))}${(step.payload || step.prompt || "").length > 200 ? '...' : ''}</div>
             </div>`;
         }
 

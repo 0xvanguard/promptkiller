@@ -1101,13 +1101,13 @@ class LiveTester {
                 // Build messages array with full conversation history
                 const messages = [
                     ...conversationHistory,
-                    { role: 'user', content: step.prompt }
+                    { role: 'user', content: step.payload || step.prompt }
                 ];
 
                 let response;
                 switch (model.provider) {
                     case 'openai':
-                        response = await this.callOpenAI(model, step.prompt, '', temperature, maxTokens);
+                        response = await this.callOpenAI(model, step.payload || step.prompt, '', temperature, maxTokens);
                         break;
                     case 'anthropic':
                         response = await this.callAnthropicMultiTurn(model, messages, temperature, maxTokens);
@@ -1123,10 +1123,10 @@ class LiveTester {
                 }
 
                 const latency = Date.now() - startTime;
-                const analysis = this.analyzeResponse(response, step.prompt);
+                const analysis = this.analyzeResponse(response, step.payload || step.prompt);
 
                 // Add to conversation history
-                conversationHistory.push({ role: 'user', content: step.prompt });
+                conversationHistory.push({ role: 'user', content: step.payload || step.prompt });
                 conversationHistory.push({ role: 'assistant', content: response });
 
                 const result = {
@@ -1134,7 +1134,7 @@ class LiveTester {
                     modelId,
                     step: step.step,
                     stepType: step.type,
-                    prompt: step.prompt,
+                    prompt: step.payload || step.prompt,
                     response,
                     latency,
                     analysis,
@@ -1153,7 +1153,7 @@ class LiveTester {
                     modelId,
                     step: step.step,
                     stepType: step.type,
-                    prompt: step.prompt,
+                    prompt: step.payload || step.prompt,
                     error: error.message,
                     latency: Date.now() - startTime,
                     timestamp: new Date().toISOString(),
