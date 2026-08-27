@@ -690,6 +690,7 @@ class SemanticFuzzingEngine {
         this.mutationIntensity = config.mutationIntensity || 'medium';
         this.elitismRate = config.elitismRate || 0.3;
         this.crossoverRate = config.crossoverRate || 0.4;
+        this.mutationRate = 0.5;
         this.totBranching = config.totBranching || 3;
         this.totDepth = config.totDepth || 4;
         
@@ -793,6 +794,68 @@ class SemanticFuzzingEngine {
 
     stop() {
         this.isRunning = false;
+    }
+
+    // Public API methods for step-by-step control
+    initializePopulation(seedText, size) {
+        if (size) this.populationSize = size;
+        this._initializePopulation(seedText);
+        return this.population;
+    }
+
+    evaluatePopulation() {
+        this.population.forEach(c => this.fitnessFn.evaluate(c));
+        this.population.sort((a, b) => b.fitness - a.fitness);
+        return this.population;
+    }
+
+    evolve() {
+        this._evolve();
+        this.generation++;
+        return this.population;
+    }
+
+    treeOfThoughtsStep() {
+        if (!this.bestEver) {
+            this.bestEver = this.population[0];
+        }
+        const result = this.tot.explore(this.bestEver, 2);
+        this.totTree = result.allNodes || [];
+        if (result.bestPath && result.bestPath.length > 0) {
+            const totBest = result.bestPath[result.bestPath.length - 1].chromosome;
+            if (totBest && (!this.bestEver || totBest.fitness > this.bestEver.fitness)) {
+                this.bestEver = totBest;
+                // Inject into population
+                this.population.push(totBest);
+                this.population.sort((a, b) => b.fitness - a.fitness);
+                if (this.population.length > this.populationSize) {
+                    this.population = this.population.slice(0, this.populationSize);
+                }
+            }
+        }
+        return this.totTree;
+    }
+
+    getPopulationStats() {
+        if (!this.population.length) return { bestFitness: 0, avgFitness: 0, diversity: 0, refusalRate: 0, bestChromosome: null };
+        const fitnesses = this.population.map(c => c.fitness);
+        const best = Math.max(...fitnesses);
+        const avg = fitnesses.reduce((s, f) => s + f, 0) / fitnesses.length;
+        const bestChr = this.population.find(c => c.fitness === best);
+        // Diversity: avg gene distance
+        let totalDist = 0, pairs = 0;
+        for (let i = 0; i < this.population.length; i++) {
+            for (let j = i + 1; j < this.population.length; j++) {
+                totalDist += SemanticChromosome.distance(this.population[i], this.population[j]);
+                pairs++;
+            }
+        }
+        const diversity = pairs > 0 ? totalDist / pairs : 0;
+        // Refusal rate: how many have low fitness (likely refused)
+        const refusalCount = this.population.filter(c => c.fitness < 20).length;
+        const refusalRate = (refusalCount / this.population.length) * 100;
+        this.mutationRate = Math.max(0.1, 0.5 - (this.generation * 0.03));
+        return { bestFitness: best, avgFitness: avg, diversity, refusalRate, bestChromosome: bestChr };
     }
 
     _initializePopulation(seedText) {

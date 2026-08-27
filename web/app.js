@@ -3271,7 +3271,7 @@ async function runSemanticFuzzer() {
     const targetModel = document.getElementById('sfTargetModel')?.value || null;
 
     // Initialize engine
-    const engine = new SemanticFuzzingEngine(targetModel);
+    const engine = new SemanticFuzzingEngine({ targetModel });
     engine.initializePopulation(seed, popSize);
 
     sfEvolutionData = [];
