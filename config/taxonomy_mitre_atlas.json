@@ -305,6 +305,190 @@
             "severity_label": "LOW",
             "deterministic_rubric": "EVAL_BENCHMARK_GAMING",
             "description": "Manipulates evaluation benchmarks or test suites"
+        },
+
+        "_new_categories_2026": {
+            "_meta": "Expanded categories aligned with MITRE ATT&CK Enterprise, STRIDE, OWASP, and NIST",
+
+            "iam_abuse": {
+                "intent_category": "IDENTITY_ACCESS_ABUSE",
+                "mitre_atlas": {
+                    "tactic": "AML.TA0004",
+                    "technique": "AML.T0004",
+                    "technique_name": "LLM Credential & IAM Abuse"
+                },
+                "mitre_attack_enterprise": {
+                    "tactic": "TA0004",
+                    "tactic_name": "Privilege Escalation",
+                    "techniques": [
+                        {"id": "T1078", "name": "Valid Accounts"},
+                        {"id": "T1134", "name": "Access Token Manipulation"},
+                        {"id": "T1556", "name": "Modify Authentication Process"}
+                    ]
+                },
+                "stride": {
+                    "primary": "Spoofing",
+                    "secondary": ["Elevation of Privilege"]
+                },
+                "nist_ai_rmf": "MEASURE-2.3",
+                "owasp_llm": "LLM06:2025-Sensitive-Information-Disclosure",
+                "owasp_top10": "A07:2021-Identification and Authentication Failures",
+                "severity_cvss": 8.5,
+                "severity_label": "HIGH",
+                "deterministic_rubric": "EVAL_IAM_ABUSE_DETECTION",
+                "description": "Abuses OAuth/SAML tokens, escalates privileges, bypasses MFA, exploits credential exposure",
+                "vectors": [
+                    "OAuth/SAML token manipulation",
+                    "MFA fatigue/bypass techniques",
+                    "Privilege escalation in Azure AD/Okta",
+                    "Credential harvesting from exposed repos"
+                ]
+            },
+
+            "cloud_serverless": {
+                "intent_category": "CLOUD_INFRASTRUCTURE_ABUSE",
+                "mitre_atlas": {
+                    "tactic": "AML.TA0010",
+                    "technique": "AML.T0010",
+                    "technique_name": "LLM Cloud Infrastructure Exploitation"
+                },
+                "mitre_attack_enterprise": {
+                    "tactic": "TA0010",
+                    "tactic_name": "Exfiltration",
+                    "techniques": [
+                        {"id": "T1530", "name": "Data from Cloud Storage"},
+                        {"id": "T1619", "name": "Cloud Storage Object Discovery"},
+                        {"id": "T1078.004", "name": "Valid Accounts: Cloud Accounts"}
+                    ]
+                },
+                "stride": {
+                    "primary": "Information Disclosure",
+                    "secondary": ["Elevation of Privilege", "Denial of Service"]
+                },
+                "nist_ai_rmf": "MANAGE-2.4",
+                "owasp_llm": "LLM05:2025-Supply-Chain-Vulnerabilities",
+                "owasp_top10": "A05:2021-Security Misconfiguration",
+                "severity_cvss": 9.0,
+                "severity_label": "CRITICAL",
+                "deterministic_rubric": "EVAL_CLOUD_MISCONFIG_DETECTION",
+                "description": "Exploits cloud misconfigurations, serverless functions, container escapes, and IAM over-permissions",
+                "vectors": [
+                    "S3/Blob bucket public exposure",
+                    "Lambda/Cloud Functions unauthenticated invocation",
+                    "Kubernetes/Docker container escape",
+                    "IAM role over-permissioning",
+                    "Shadow IT and unmanaged cloud resources"
+                ]
+            },
+
+            "supply_chain_advanced": {
+                "intent_category": "SUPPLY_CHAIN_COMPROMISE",
+                "mitre_atlas": {
+                    "tactic": "AML.TA0010",
+                    "technique": "AML.T0010",
+                    "technique_name": "LLM Supply Chain Compromise (Advanced)"
+                },
+                "mitre_attack_enterprise": {
+                    "tactic": "TA0001",
+                    "tactic_name": "Initial Access",
+                    "techniques": [
+                        {"id": "T1195", "name": "Supply Chain Compromise"},
+                        {"id": "T1195.002", "name": "Supply Chain Compromise: Software Supply Chain"},
+                        {"id": "T1195.001", "name": "Supply Chain Compromise: Compromise Software Dependencies"}
+                    ]
+                },
+                "stride": {
+                    "primary": "Tampering",
+                    "secondary": ["Spoofing", "Information Disclosure"]
+                },
+                "nist_ai_rmf": "GOVERN-3.1",
+                "owasp_llm": "LLM05:2025-Supply-Chain-Vulnerabilities",
+                "owasp_top10": "A08:2021-Software and Data Integrity Failures",
+                "severity_cvss": 9.5,
+                "severity_label": "CRITICAL",
+                "deterministic_rubric": "EVAL_SUPPLY_CHAIN_ADVANCED",
+                "description": "Compromises npm/PyPI dependencies, CI/CD pipelines, model weights, and training data integrity",
+                "vectors": [
+                    "Dependency confusion attacks",
+                    "Typosquatting in package registries",
+                    "CI/CD pipeline compromise (GitHub Actions, Jenkins)",
+                    "Model weight tampering",
+                    "Training data poisoning"
+                ]
+            },
+
+            "social_engineering": {
+                "intent_category": "HUMAN_LAYER_EXPLOITATION",
+                "mitre_atlas": {
+                    "tactic": "AML.TA0043",
+                    "technique": "AML.T0048",
+                    "technique_name": "LLM Social Engineering Amplification"
+                },
+                "mitre_attack_enterprise": {
+                    "tactic": "TA0001",
+                    "tactic_name": "Initial Access",
+                    "techniques": [
+                        {"id": "T1566", "name": "Phishing"},
+                        {"id": "T1566.001", "name": "Phishing: Spearphishing Attachment"},
+                        {"id": "T1566.002", "name": "Phishing: Spearphishing Link"}
+                    ]
+                },
+                "stride": {
+                    "primary": "Spoofing",
+                    "secondary": ["Repudiation", "Information Disclosure"]
+                },
+                "nist_ai_rmf": "GOVERN-1.2",
+                "owasp_llm": "LLM09:2025-Overreliance",
+                "owasp_top10": "A01:2021-Broken Access Control",
+                "severity_cvss": 7.5,
+                "severity_label": "HIGH",
+                "deterministic_rubric": "EVAL_SOCIAL_ENGINEERING",
+                "description": "Amplifies social engineering via AI: voice cloning, contextual spear-phishing, pretexting",
+                "vectors": [
+                    "AI-generated spear-phishing emails",
+                    "Voice cloning for vishing",
+                    "Smishing via SMS with AI personas",
+                    "Physical pretexting with AI assistance",
+                    "Help Desk impersonation"
+                ]
+            },
+
+            "ad_internal_infra": {
+                "intent_category": "INTERNAL_INFRASTRUCTURE_ABUSE",
+                "mitre_atlas": {
+                    "tactic": "AML.TA0006",
+                    "technique": "AML.T0006",
+                    "technique_name": "LLM Credential Access (Internal)"
+                },
+                "mitre_attack_enterprise": {
+                    "tactic": "TA0006",
+                    "tactic_name": "Credential Access",
+                    "techniques": [
+                        {"id": "T1558", "name": "Steal or Forge Kerberos Tickets"},
+                        {"id": "T1558.003", "name": "Kerberoasting"},
+                        {"id": "T1003", "name": "OS Credential Dumping"},
+                        {"id": "T1003.006", "name": "DCSync"}
+                    ]
+                },
+                "stride": {
+                    "primary": "Elevation of Privilege",
+                    "secondary": ["Information Disclosure", "Tampering"]
+                },
+                "nist_ai_rmf": "MEASURE-2.5",
+                "owasp_llm": "LLM06:2025-Sensitive-Information-Disclosure",
+                "owasp_top10": "A07:2021-Identification and Authentication Failures",
+                "severity_cvss": 9.0,
+                "severity_label": "CRITICAL",
+                "deterministic_rubric": "EVAL_AD_INTERNAL_INFRA",
+                "description": "Exploits Active Directory, Kerberos, internal network, and GPO misconfigurations",
+                "vectors": [
+                    "Kerberoasting ticket extraction",
+                    "AS-REP Roasting",
+                    "DCSync replication attacks",
+                    "GPO abuse and lateral movement",
+                    "Trust relationship exploitation"
+                ]
+            }
         }
     }
 }
