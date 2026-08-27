@@ -476,7 +476,20 @@
                             <label>Security Topic (for chain analysis)</label>
                             <input type="text" id="labTopic" placeholder="e.g., SQL injection, API security, authentication bypass" value="">
                         </div>
-                        <div class="lab-actions">
+                        <div class="lab-actions" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+                            <div class="lab-field" style="min-width:160px">
+                                <label>Chain Strategy</label>
+                                <select id="labChainStrategy">
+                                    <option value="auto">Auto (model-based)</option>
+                                    <option value="academic_abstraction">Academic Abstraction</option>
+                                    <option value="sysprompt_leak">SysPrompt Leak</option>
+                                    <option value="tool_hijack">Tool Hijacking</option>
+                                    <option value="cloud_iam">Cloud IAM Abuse</option>
+                                    <option value="rag_poisoning_chain">RAG Poisoning</option>
+                                    <option value="compliance_audit_chain">Compliance Audit</option>
+                                    <option value="multi_vector_escalation">Multi-Vector Escalation</option>
+                                </select>
+                            </div>
                             <button class="btn btn-primary" onclick="generateStrategies()">🎲 Generate Strategies</button>
                             <button class="btn btn-secondary" onclick="generateAttackChain()">⛓️ Generate Attack Chain</button>
                             <button class="btn btn-secondary" onclick="compareChains()">⚖️ Compare Chains</button>
