@@ -3457,3 +3457,83 @@ body {
 .modal-meta-item span {
     font-weight: 600;
 }
+
+/* ═══════════════════════════════════════════════
+   PURPLE TEAM CYCLE
+   ═══════════════════════════════════════════════ */
+
+.purple-team-report {
+    padding: 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.purple-team-report h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.purple-team-report h5 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.metric-card {
+    padding: 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    line-height: 1.2;
+}
+
+.metric-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+}
+
+.defense-artifact pre {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.purple-team-report table {
+    font-family: var(--font-mono);
+}
+
+.purple-team-report table th {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+@media (max-width: 768px) {
+    .purple-team-report .metric-card {
+        padding: 12px;
+    }
+    .purple-team-report .metric-value {
+        font-size: 20px;
+    }
+    .defense-artifact {
+        grid-column: 1 / -1;
+    }
+}
