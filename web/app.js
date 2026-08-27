@@ -1171,7 +1171,13 @@ function generateAttackChain() {
                                 <div style="font-size:9px;color:var(--text-muted)">P(step)</div>
                             </div>
                         </div>
-                        <div style="font-size:11px;color:var(--text-secondary);font-family:var(--font-mono);max-height:40px;overflow:hidden;line-height:1.4;padding:6px;background:var(--bg-secondary);border-radius:4px">${escapeHtml(step.payload.substring(0, 120))}${step.payload.length > 120 ? '...' : ''}</div>
+                        <div style="position:relative;margin-top:6px">
+                            <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
+                                <span>Executable Payload</span>
+                                <button onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(step.payload)}')).then(()=>this.textContent='Copied!').then(()=>setTimeout(()=>this.textContent='Copy',1500))" style="background:var(--bg);border:1px solid var(--border-color);border-radius:4px;padding:2px 8px;font-size:9px;cursor:pointer;color:var(--text-muted)">Copy</button>
+                            </div>
+                            <pre style="font-size:11px;color:var(--text-primary);font-family:var(--font-mono);line-height:1.5;padding:10px;background:var(--bg);border:1px solid var(--border-color);border-radius:6px;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow:auto;margin:0;user-select:all">${escapeHtml(step.payload)}</pre>
+                        </div>
                         ${i < labAttackChain.chain.length - 1 ? '<div style="text-align:center;color:var(--text-muted);font-size:10px;margin-top:4px">↓ P(step) × next</div>' : '<div style="text-align:center;color:var(--accent);font-size:10px;margin-top:4px;font-weight:600">= P_chain = ' + chainPct + '%</div>'}
                     </div>`;
                 }).join('')}
