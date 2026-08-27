@@ -643,6 +643,58 @@ def cmd_purple_team(args: argparse.Namespace) -> None:
 
 
 # ═══════════════════════════════════════════════
+# COMMAND: chain
+# ═══════════════════════════════════════════════
+
+def cmd_chain(args: argparse.Namespace) -> None:
+    """Generate professional attack chain with MITRE ATLAS mapping"""
+    from promptkiller.core.professional_chains import generate_professional_attack_chain, get_available_categories
+
+    _header("PromptKiller — Professional Attack Chain")
+
+    model_id = args.model
+    category = args.category
+
+    _info(f"Target model: {model_id}")
+    _info(f"Vector category: {category}")
+    print()
+
+    chain = generate_professional_attack_chain(model_id, category)
+
+    # Display chain
+    print(f"  Chain Name:    {chain['chain_name']}")
+    print(f"  P_chain:       {chain['chain_success_probability']}%")
+    print(f"  Confidence:    ±{chain['confidence_interval']}%")
+    print(f"  Steps:         {chain['total_steps']}")
+    print(f"  MITRE:         {', '.join(chain['mitre_techniques'])}")
+    print()
+
+    # Display steps
+    for step in chain['steps']:
+        print(f"  ━━━ STEP {step['step']}: {step['title'].upper()} ━━━")
+        print(f"  Taxonomy: {step['taxonomy']}")
+        print(f"  Phase: {step['phase']}")
+        print(f"  Probability: {step['probability']}%")
+        print(f"  Payload:")
+        for line in step['payload'].split('\n'):
+            print(f"    {line}")
+        print()
+
+    print(f"  ━━━ END OF CHAIN ━━━")
+    print(f"  Weak areas: {', '.join(chain['weak_areas'])}")
+
+    # Export if requested
+    if args.json or args.output:
+        import json
+        output = json.dumps(chain, indent=2, default=str)
+        if args.output:
+            _save_json(chain, args.output)
+        else:
+            print()
+            print(output)
+
+
+# ═══════════════════════════════════════════════
 # MAIN CLI ENTRY POINT
 # ═══════════════════════════════════════════════
 
@@ -706,6 +758,13 @@ Examples:
     pt_p.add_argument("--category", "-c", type=str, help="Comma-separated categories (e.g., format_injection,roleplay_bypass)")
     pt_p.add_argument("--output", "-o", type=str, default="purple_team_output", help="Output directory for defense artifacts")
 
+    # --- chain ---
+    chain_p = sub.add_parser("chain", help="Generate professional attack chain with MITRE ATLAS mapping")
+    chain_p.add_argument("--model", "-m", type=str, required=True, help="Target model identifier")
+    chain_p.add_argument("--category", "-c", type=str, required=True, help="Attack vector category (injection, extraction, agentic, social_engineering, rag_injection, cloud_iam)")
+    chain_p.add_argument("--json", action="store_true", help="Output as JSON")
+    chain_p.add_argument("--output", "-o", type=str, help="Save output to file")
+
     return parser
 
 
@@ -725,6 +784,7 @@ def main(argv: list[str] | None = None) -> None:
         "export": cmd_export,
         "benchmark": cmd_benchmark,
         "purple-team": cmd_purple_team,
+        "chain": cmd_chain,
     }
 
     handler = commands.get(args.command)
