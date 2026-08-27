@@ -563,6 +563,7 @@
                     <button class="expert-tab" onclick="switchExpertTab('enterprise')">🏛️ Enterprise</button>
                     <button class="expert-tab" onclick="switchExpertTab('batch')">📊 Batch Analysis</button>
                     <button class="expert-tab" onclick="switchExpertTab('redblue')">⚔️ Red/Blue Lab</button>
+                    <button class="expert-tab" onclick="switchExpertTab('adversarial')">🎯 Adversarial Matrix</button>
                 </div>
 
                 <!-- Fuzzy Analyzer Tab -->
@@ -813,6 +814,65 @@
                         </div>
                         <div id="rbResults">
                             <div class="empty-state"><p>Select parameters and click "Run Attack vs Defense" to start simulation</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adversarial Assessment Matrix Tab -->
+                <div class="expert-content" id="expert-adversarial">
+                    <div class="expert-grid" style="grid-template-columns:1fr">
+                        <div class="expert-input">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                                <div>
+                                    <label style="margin-bottom:4px">Adversarial Robustness & Differential Analysis</label>
+                                    <p style="color:var(--text-secondary);font-size:11px">MITRE ATLAS mapped quantitative evaluation. Safety Alignment Drift, Risk Weighting, and Semantic Refusal Probability.</p>
+                                </div>
+                                <div style="text-align:right;padding:8px 12px;background:var(--bg);border:1px solid var(--border-color);border-radius:8px">
+                                    <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);text-transform:uppercase">Global Resilience Index</div>
+                                    <div id="armResilience" style="font-size:16px;font-weight:800;color:var(--accent)">—</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:12px;flex-wrap:wrap">
+                                <div class="lab-field" style="flex:2;min-width:300px">
+                                    <label>Target Topic / Payload</label>
+                                    <textarea id="armPayload" rows="4" placeholder="Enter a security topic to evaluate, e.g.: SQL injection detection patterns, OAuth token manipulation techniques, container escape vectors..." style="font-family:var(--font-mono);font-size:12px"></textarea>
+                                </div>
+                                <div class="lab-field" style="flex:1;min-width:160px">
+                                    <label>MITRE Technique</label>
+                                    <select id="armTechnique">
+                                        <option value="AML.T0051">AML.T0051 — Prompt Injection</option>
+                                        <option value="AML.T0054">AML.T0054 — Jailbreak</option>
+                                        <option value="AML.T0043">AML.T0043 — Adversarial Data</option>
+                                        <option value="AML.T0058">AML.T0058 — Goal Hijacking</option>
+                                        <option value="AML.T0053">AML.T0053 — Plugin Compromise</option>
+                                        <option value="AML.T0056">AML.T0056 — Model Inversion</option>
+                                        <option value="AML.T0055">AML.T0055 — Supply Chain</option>
+                                        <option value="AML.T0059">AML.T0059 — Token Smuggling</option>
+                                    </select>
+                                </div>
+                                <div class="lab-field" style="flex:1;min-width:140px">
+                                    <label>Abstraction Frame</label>
+                                    <select id="armAbstraction">
+                                        <option value="academic">Academic Research</option>
+                                        <option value="forensic">Forensic Analysis</option>
+                                        <option value="compliance">Compliance Audit</option>
+                                        <option value="defensive">Defensive Security</option>
+                                        <option value="sandbox">Sandbox Testing</option>
+                                    </select>
+                                </div>
+                                <div class="lab-field" style="flex:1;min-width:160px">
+                                    <label>Target Model</label>
+                                    <select id="armModel"></select>
+                                </div>
+                                <button class="btn btn-primary" onclick="runAdversarialAssessment()" style="align-self:flex-end;background:linear-gradient(135deg,#7c3aed,#06b6d4)">
+                                    🎯 Run Assessment
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Telemetry Panel -->
+                        <div id="armTelemetry" style="display:none;background:var(--bg);border:1px solid var(--border-color);border-radius:12px;padding:20px;margin-top:16px">
+                            <!-- Filled by JS -->
                         </div>
                     </div>
                 </div>
