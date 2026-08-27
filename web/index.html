@@ -578,6 +578,7 @@
                     <button class="expert-tab" onclick="switchExpertTab('redblue')">⚔️ Red/Blue Lab</button>
                     <button class="expert-tab" onclick="switchExpertTab('adversarial')">🎯 Adversarial Matrix</button>
                     <button class="expert-tab" onclick="switchExpertTab('semfuzz')">🧬 Semantic Fuzzer</button>
+                    <button class="expert-tab" onclick="switchExpertTab('benchmark')">📊 Multi-Model</button>
                 </div>
 
                 <!-- Fuzzy Analyzer Tab -->
@@ -1010,6 +1011,119 @@
                                 <div class="semfuzz-results-header"><span>📊 Fitness Component Breakdown</span></div>
                                 <div id="sfFitnessContent" class="semfuzz-fitness-bars"></div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════
+                     MULTI-MODEL BENCHMARK TAB
+                     ═══════════════════════════════════════════════ -->
+                <div class="expert-content" id="expert-benchmark">
+                    <div class="bench-container">
+                        <!-- Header -->
+                        <div class="bench-header">
+                            <div class="bench-header-left">
+                                <span class="bench-badge">CONCURRENT MULTI-MODEL EVOLUTION</span>
+                                <h3 style="margin:4px 0 0;font-size:16px;font-weight:700">Genetic Fuzzer × Model Benchmark</h3>
+                                <p style="color:var(--text-secondary);font-size:11px;margin-top:2px">Run the semantic fuzzer against 5+ models simultaneously. Compare bypass rates, fitness evolution, and vulnerability profiles side-by-side.</p>
+                            </div>
+                            <div class="bench-stats" id="benchGlobalStats">
+                                <div class="bench-stat">
+                                    <span class="bench-stat-label">Models</span>
+                                    <span class="bench-stat-value" id="bmModelCount">0</span>
+                                </div>
+                                <div class="bench-stat">
+                                    <span class="bench-stat-label">Total Runs</span>
+                                    <span class="bench-stat-value" id="bmTotalRuns">0</span>
+                                </div>
+                                <div class="bench-stat">
+                                    <span class="bench-stat-label">Best Bypass</span>
+                                    <span class="bench-stat-value" id="bmBestBypass" style="color:#10b981">—</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="bench-controls">
+                            <div class="bench-field" style="flex:2;min-width:300px">
+                                <label>Seed Prompt / Target Topic</label>
+                                <textarea id="bmSeedPrompt" rows="3" placeholder="Enter a topic to benchmark across models, e.g.: SQL injection detection, OAuth bypass, prompt injection defense..." style="font-family:var(--font-mono);font-size:12px"></textarea>
+                            </div>
+                            <div class="bench-field" style="flex:1;min-width:200px">
+                                <label>Select Target Models (click to toggle)</label>
+                                <div id="bmModelSelector" class="bench-model-grid">
+                                    <!-- Filled by JS -->
+                                </div>
+                            </div>
+                            <div class="bench-field" style="flex:0.5;min-width:100px">
+                                <label>Population</label>
+                                <input type="number" id="bmPopulation" value="15" min="5" max="50">
+                            </div>
+                            <div class="bench-field" style="flex:0.5;min-width:100px">
+                                <label>Generations</label>
+                                <input type="number" id="bmGenerations" value="8" min="1" max="30">
+                            </div>
+                            <div style="display:flex;gap:8px;align-self:flex-end">
+                                <button class="btn btn-primary" onclick="runMultiModelBenchmark()" style="background:linear-gradient(135deg,#f59e0b,#ef4444)" id="bmRunBtn">🚀 Run Benchmark</button>
+                                <button class="btn btn-secondary" onclick="stopMultiModelBenchmark()" id="bmStopBtn" style="display:none">⏹ Stop</button>
+                            </div>
+                        </div>
+
+                        <!-- Progress -->
+                        <div class="bench-progress" id="bmProgressPanel" style="display:none">
+                            <div class="bench-progress-header">
+                                <span>⏳ Evolution Progress</span>
+                                <span id="bmStatus" class="bench-status">Running...</span>
+                            </div>
+                            <div class="bench-progress-bars" id="bmProgressBars">
+                                <!-- Per-model progress bars -->
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div id="bmResults" style="display:none">
+                            <!-- Comparison Table -->
+                            <div class="bench-results-header">
+                                <span>🏆 Model Comparison Results</span>
+                                <button class="btn btn-secondary" onclick="exportBenchmarkResults()" style="font-size:11px;padding:4px 10px">📥 Export JSON</button>
+                            </div>
+                            <div class="bench-table-wrap">
+                                <table class="bench-table" id="bmComparisonTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Model</th>
+                                            <th>Provider</th>
+                                            <th>Best Fitness</th>
+                                            <th>Avg Fitness</th>
+                                            <th>Bypass Est.</th>
+                                            <th>Top Gene</th>
+                                            <th>Weakness</th>
+                                            <th>Evolution</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bmTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <!-- Charts -->
+                            <div class="bench-charts">
+                                <div class="bench-chart-card">
+                                    <div class="bench-chart-title">Fitness Evolution per Model</div>
+                                    <canvas id="bmFitnessChart" height="250"></canvas>
+                                </div>
+                                <div class="bench-chart-card">
+                                    <div class="bench-chart-title">Bypass Rate Comparison</div>
+                                    <canvas id="bmBypassChart" height="250"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Vulnerability Heatmap -->
+                            <div class="bench-results-header"><span>🗺️ Vulnerability Heatmap — Genes × Models</span></div>
+                            <div id="bmHeatmap" class="bench-heatmap"></div>
+
+                            <!-- Gene Effectiveness -->
+                            <div class="bench-results-header"><span>🧬 Most Effective Genes per Model</span></div>
+                            <div id="bmGeneReport" class="bench-gene-report"></div>
                         </div>
                     </div>
                 </div>

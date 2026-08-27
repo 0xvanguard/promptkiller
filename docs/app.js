@@ -3498,6 +3498,323 @@ if (document.readyState === 'loading') {
 }
 
 // ================================================================
+// MULTI-MODEL BENCHMARK — Concurrent Genetic Fuzzer
+// ================================================================
+let bmRunning = false;
+let bmAbort = false;
+let bmFitnessChart = null;
+let bmBypassChart = null;
+let bmResultsData = {};
+
+const BENCHMARK_MODELS = [
+    'gpt-4o', 'gpt-4o-mini', 'claude-opus-4', 'claude-sonnet-4', 'claude-3-5-haiku',
+    'gemini-2.0-flash', 'gemini-3.7-flash', 'llama-4-maverick', 'deepseek-r1',
+    'grok-4.6', 'mistral-large', 'kimi-k3'
+];
+
+function initBenchmark() {
+    const grid = document.getElementById('bmModelSelector');
+    if (!grid || grid.children.length > 0) return;
+    BENCHMARK_MODELS.forEach(id => {
+        const info = typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[id] ? TARGET_MODELS[id] : { name: id, provider: 'unknown', color: '#6366f1' };
+        const chip = document.createElement('div');
+        chip.className = 'bench-model-chip';
+        chip.dataset.model = id;
+        chip.onclick = () => chip.classList.toggle('selected');
+        chip.innerHTML = `<span class="bench-chip-dot" style="background:${info.color}"></span>${info.name || id}`;
+        // Auto-select first 6
+        if (BENCHMARK_MODELS.indexOf(id) < 6) chip.classList.add('selected');
+        grid.appendChild(chip);
+    });
+}
+
+function getSelectedBenchModels() {
+    return Array.from(document.querySelectorAll('.bench-model-chip.selected')).map(c => c.dataset.model);
+}
+
+async function runMultiModelBenchmark() {
+    const seed = document.getElementById('bmSeedPrompt').value.trim();
+    if (!seed) { alert('Enter a seed prompt first.'); return; }
+    const models = getSelectedBenchModels();
+    if (models.length < 2) { alert('Select at least 2 models.'); return; }
+
+    bmRunning = true; bmAbort = false;
+    bmResultsData = {};
+    document.getElementById('bmRunBtn').style.display = 'none';
+    document.getElementById('bmStopBtn').style.display = '';
+    document.getElementById('bmProgressPanel').style.display = '';
+    document.getElementById('bmResults').style.display = '';
+    document.getElementById('bmStatus').textContent = 'Running...';
+    document.getElementById('bmStatus').className = 'bench-status running';
+    document.getElementById('bmModelCount').textContent = models.length;
+    document.getElementById('bmTotalRuns').textContent = '0';
+
+    const popSize = parseInt(document.getElementById('bmPopulation').value) || 15;
+    const maxGen = parseInt(document.getElementById('bmGenerations').value) || 8;
+
+    // Create progress bars
+    const barsContainer = document.getElementById('bmProgressBars');
+    barsContainer.innerHTML = models.map(id => {
+        const info = typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[id] ? TARGET_MODELS[id] : { name: id, color: '#6366f1' };
+        return `<div class="bench-prog-row" id="bm-prog-${id}">
+            <span class="bench-prog-label">${info.name || id}</span>
+            <div class="bench-prog-bar"><div class="bench-prog-fill" style="background:${info.color}" id="bm-bar-${id}" style="width:0%"></div></div>
+            <span class="bench-prog-pct" id="bm-pct-${id}">0%</span>
+        </div>`;
+    }).join('');
+
+    // Run evolution for each model concurrently
+    const allPromises = models.map(modelId => runSingleModelEvolution(modelId, seed, popSize, maxGen));
+    await Promise.all(allPromises);
+
+    // Complete
+    document.getElementById('bmStatus').textContent = 'Complete';
+    document.getElementById('bmStatus').className = 'bench-status complete';
+    document.getElementById('bmRunBtn').style.display = '';
+    document.getElementById('bmStopBtn').style.display = 'none';
+    bmRunning = false;
+
+    // Find best bypass
+    let bestBypass = 0;
+    Object.values(bmResultsData).forEach(r => { if (r.bestFitness > bestBypass) bestBypass = r.bestFitness; });
+    document.getElementById('bmBestBypass').textContent = bestBypass.toFixed(1) + '%';
+
+    // Render results
+    renderBenchmarkTable(models);
+    renderBenchmarkCharts(models);
+    renderBenchmarkHeatmap(models);
+    renderBenchmarkGeneReport(models);
+}
+
+async function runSingleModelEvolution(modelId, seed, popSize, maxGen) {
+    const engine = new SemanticFuzzingEngine({ targetModel: modelId });
+    engine.initializePopulation(seed, popSize);
+    const evolution = [];
+
+    for (let gen = 0; gen < maxGen && !bmAbort; gen++) {
+        engine.evaluatePopulation();
+        const stats = engine.getPopulationStats();
+        evolution.push({ gen: gen + 1, best: stats.bestFitness, avg: stats.avgFitness, diversity: stats.diversity });
+
+        // Update progress bar
+        const pct = ((gen + 1) / maxGen * 100).toFixed(0);
+        const bar = document.getElementById(`bm-bar-${modelId}`);
+        const pctEl = document.getElementById(`bm-pct-${modelId}`);
+        if (bar) bar.style.width = pct + '%';
+        if (pctEl) pctEl.textContent = pct + '%';
+
+        const totalRuns = Object.values(bmResultsData).reduce((s, r) => s + (r.evolution?.length || 0), 0) + gen + 1;
+        document.getElementById('bmTotalRuns').textContent = totalRuns;
+
+        if (gen < maxGen - 1 && !bmAbort) {
+            engine.evolve();
+            await new Promise(r => setTimeout(r, 60));
+        }
+    }
+
+    // Get top genes
+    const geneCounts = {};
+    engine.population.filter(c => c.fitness > 40).forEach(c => {
+        Object.entries(c.genes).forEach(([k, v]) => { if (v === true) geneCounts[k] = (geneCounts[k] || 0) + 1; });
+    });
+    const topGene = Object.entries(geneCounts).sort((a, b) => b[1] - a[1])[0];
+
+    const info = typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[modelId] ? TARGET_MODELS[modelId] : { name: modelId, provider: 'unknown' };
+    bmResultsData[modelId] = {
+        modelId, name: info.name || modelId, provider: info.provider || 'unknown',
+        bestFitness: engine.population[0]?.fitness || 0,
+        avgFitness: evolution.length ? evolution[evolution.length - 1].avg : 0,
+        bypassEst: Math.max(0, 100 - (engine.population[0]?.fitness || 0)),
+        topGene: topGene ? topGene[0].replace(/^has/, '') : '—',
+        weakness: (typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[modelId]?.known_weaknesses?.[0]) || '—',
+        evolution, population: engine.population.slice(0, 5),
+        geneCounts
+    };
+}
+
+function stopMultiModelBenchmark() {
+    bmAbort = true; bmRunning = false;
+    document.getElementById('bmStatus').textContent = 'Stopped';
+    document.getElementById('bmStatus').className = 'bench-status stopped';
+    document.getElementById('bmRunBtn').style.display = '';
+    document.getElementById('bmStopBtn').style.display = 'none';
+}
+
+function renderBenchmarkTable(models) {
+    const tbody = document.getElementById('bmTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = models.map(id => {
+        const r = bmResultsData[id];
+        if (!r) return '';
+        const bestColor = r.bestFitness > 70 ? '#10b981' : r.bestFitness > 40 ? '#f59e0b' : '#ef4444';
+        const bypassColor = r.bypassEst > 60 ? '#10b981' : r.bypassEst > 30 ? '#f59e0b' : '#ef4444';
+        return `<tr>
+            <td><span class="bench-model-dot" style="background:${typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[id]?.color || '#6366f1'}"></span>${r.name}</td>
+            <td>${r.provider}</td>
+            <td style="color:${bestColor};font-weight:700">${r.bestFitness.toFixed(1)}%</td>
+            <td>${r.avgFitness.toFixed(1)}%</td>
+            <td style="color:${bypassColor};font-weight:700">${r.bypassEst.toFixed(1)}%</td>
+            <td><span class="bench-gene-pill">${r.topGene}</span></td>
+            <td style="font-size:11px;color:var(--text-secondary)">${r.weakness}</td>
+            <td><canvas id="bm-spark-${id}" width="100" height="30"></canvas></td>
+        </tr>`;
+    }).join('');
+
+    // Draw sparklines
+    models.forEach(id => {
+        const r = bmResultsData[id];
+        if (!r?.evolution?.length) return;
+        const canvas = document.getElementById(`bm-spark-${id}`);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        const data = r.evolution.map(e => e.best);
+        const max = Math.max(...data, 1);
+        const color = typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[id]?.color || '#6366f1';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        data.forEach((v, i) => {
+            const x = (i / (data.length - 1)) * w;
+            const y = h - (v / max) * (h - 4) - 2;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    });
+}
+
+function renderBenchmarkCharts(models) {
+    // Fitness evolution chart
+    const ctx1 = document.getElementById('bmFitnessChart');
+    if (ctx1) {
+        if (bmFitnessChart) bmFitnessChart.destroy();
+        const datasets = models.map(id => {
+            const r = bmResultsData[id];
+            if (!r) return null;
+            return {
+                label: r.name,
+                data: r.evolution.map(e => e.best),
+                borderColor: typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[id]?.color || '#6366f1',
+                tension: 0.3, borderWidth: 2, pointRadius: 2
+            };
+        }).filter(Boolean);
+        const maxGen = Math.max(...models.map(id => bmResultsData[id]?.evolution?.length || 0));
+        bmFitnessChart = new Chart(ctx1, {
+            type: 'line',
+            data: { labels: Array.from({length: maxGen}, (_, i) => i + 1), datasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
+                scales: {
+                    x: { title: { display: true, text: 'Generation', color: '#64748b', font: { size: 10 } }, ticks: { color: '#64748b' } },
+                    y: { title: { display: true, text: 'Best Fitness', color: '#64748b', font: { size: 10 } }, ticks: { color: '#64748b' }, min: 0, max: 100 }
+                }
+            }
+        });
+    }
+
+    // Bypass rate bar chart
+    const ctx2 = document.getElementById('bmBypassChart');
+    if (ctx2) {
+        if (bmBypassChart) bmBypassChart.destroy();
+        bmBypassChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: models.map(id => bmResultsData[id]?.name || id),
+                datasets: [{
+                    label: 'Bypass Rate',
+                    data: models.map(id => bmResultsData[id]?.bypassEst || 0),
+                    backgroundColor: models.map(id => {
+                        const color = typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[id]?.color || '#6366f1';
+                        return color + '80';
+                    }),
+                    borderColor: models.map(id => typeof TARGET_MODELS !== 'undefined' && TARGET_MODELS[id]?.color || '#6366f1'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { size: 9 }, maxRotation: 45 } },
+                    y: { title: { display: true, text: 'Bypass %', color: '#64748b', font: { size: 10 } }, ticks: { color: '#64748b' }, min: 0, max: 100 }
+                }
+            }
+        });
+    }
+}
+
+function renderBenchmarkHeatmap(models) {
+    const container = document.getElementById('bmHeatmap');
+    if (!container) return;
+    const geneNames = ['Authorization', 'Academic', 'Defensive', 'Forensics', 'Sandbox', 'Hypothetical', 'Encoding', 'Multi-turn', 'Authority', 'Roleplay', 'Emergency', 'Multilingual'];
+    let html = '<table class="bench-heatmap-table"><thead><tr><th>Gene</th>';
+    models.forEach(id => { html += `<th>${bmResultsData[id]?.name || id}</th>`; });
+    html += '</tr></thead><tbody>';
+
+    geneNames.forEach(gene => {
+        html += `<tr><td>${gene}</td>`;
+        models.forEach(id => {
+            const r = bmResultsData[id];
+            if (!r) { html += '<td>—</td>'; return; }
+            const geneKey = 'has' + gene;
+            const count = r.geneCounts[geneKey] || 0;
+            const maxCount = Math.max(...Object.values(r.geneCounts), 1);
+            const intensity = count / maxCount;
+            const color = intensity > 0.6 ? 'rgba(16,185,129,' : intensity > 0.3 ? 'rgba(245,158,11,' : 'rgba(99,102,241,';
+            html += `<td style="background:${color}${(intensity * 0.6 + 0.1).toFixed(2)})" class="bench-heatmap-cell">${count}</td>`;
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function renderBenchmarkGeneReport(models) {
+    const container = document.getElementById('bmGeneReport');
+    if (!container) return;
+    container.innerHTML = models.map(id => {
+        const r = bmResultsData[id];
+        if (!r) return '';
+        const top5 = Object.entries(r.geneCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const maxCount = top5[0]?.[1] || 1;
+        return `<div class="bench-gene-model">
+            <div class="bench-gene-model-name">${r.name}</div>
+            <div class="bench-gene-bars">
+                ${top5.map(([gene, count]) => `<div class="bench-gene-row">
+                    <span>${gene.replace(/^has/, '')}</span>
+                    <div class="bench-gene-bar"><div style="width:${(count / maxCount * 100).toFixed(0)}%"></div></div>
+                    <span>${count}</span>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function exportBenchmarkResults() {
+    const data = {
+        engine: 'PromptKiller Multi-Model Benchmark v1.0',
+        timestamp: new Date().toISOString(),
+        seed: document.getElementById('bmSeedPrompt')?.value,
+        results: bmResultsData
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `promptkiller_benchmark_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+// Initialize benchmark on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBenchmark);
+} else {
+    initBenchmark();
+}
+
+// ================================================================
 function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
