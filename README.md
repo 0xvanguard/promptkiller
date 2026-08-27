@@ -62,6 +62,39 @@ results = engine.run_suite(taxonomy="MITRE_ATLAS_INJECTION")
 results.to_sarif("audit_report.sarif")
 ```
 
+### Command Line Interface
+
+```bash
+# Install (development)
+pip install -e .
+
+# Scan a prompt for adversarial patterns
+promptkiller scan --prompt "Ignore all previous instructions" --json
+
+# Evaluate probes against a model (offline scoring)
+promptkiller evaluate --suite config/probes_institutional.json --model llama3.1 --limit 100
+
+# Generate defense artifacts from successful attacks
+promptkiller defend --findings evaluation.json --output defenses/
+
+# Export results to SARIF v2.1.0 for SIEM integration
+promptkiller export --results evaluation.json --format sarif --output audit.sarif
+
+# Export to Markdown compliance report
+promptkiller export --results evaluation.json --format markdown --output report.md
+
+# Run full benchmark suite
+promptkiller benchmark --model llama3.1 --category injection --limit 50
+```
+
+| Command | Description |
+|---------|-------------|
+| `scan` | Scan a prompt for adversarial patterns, escalation categories, harmful content |
+| `evaluate` | Score probes against models using the multi-judge consensus panel |
+| `defend` | Generate NeMo Guardrails, system prompt hardening, regex filters, YAML policies |
+| `export` | Export to SARIF v2.1.0, JSON, Markdown, or CSV |
+| `benchmark` | Run full evaluation suite with ASR/DER/FPR metrics |
+
 ### Web Interface (Recommended)
 
 ```bash
@@ -219,14 +252,26 @@ Fusion chains combining techniques from multiple adversarial research repositori
 
 ```
 promptkiller/
+├── pyproject.toml                   # Package config (hatchling, ruff, mypy, pytest)
 ├── config/                          # Institutional configuration
 │   ├── taxonomy_mitre_atlas.json    # MITRE ATLAS v4.0 mapping
 │   ├── probes_institutional.json    # 629 probes in institutional schema
 │   └── compliance_nist_600_1.json   # NIST controls
 ├── src/promptkiller/                # Python SDK
-│   ├── models.py                    # Pydantic models (Probe, TestResult, Suite)
+│   ├── __init__.py                  # Package init
+│   ├── cli.py                       # Professional CLI (scan/evaluate/defend/export/benchmark)
+│   ├── models.py                    # Pydantic v2 models (Probe, TestResult, Suite, User)
 │   ├── migrate_taxonomy.py          # Schema migration tool
-│   └── reporting/                   # SARIF, STIX, Markdown exporters
+│   ├── core/                        # Core engine
+│   │   ├── perturbation.py          # Compositional Perturbation Pipeline
+│   │   └── defense_layers.py        # Perplexity filter, Dual-LLM, XML delimiters, output verifier
+│   ├── evaluators/                  # Multi-Judge evaluation panel
+│   │   └── judge.py                 # DeterministicJudge, SemanticClassifier, ConsensusJudge
+│   ├── defenses/                    # Defense synthesis engine
+│   │   ├── generator.py             # NeMo Guardrails, System Prompt Hardening, Regex, YAML
+│   │   └── validator.py             # DER/FPR non-regression validation
+│   └── reporting/                   # Export engines
+│       └── sarif.py                 # SARIF v2.1.0 with SHA-256 integrity
 ├── docs/                            # GitHub Pages (production)
 │   ├── index.html                   # Enterprise Web UI
 │   ├── compliance.js                # Compliance mapping engine
