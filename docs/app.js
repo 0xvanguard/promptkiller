@@ -62,7 +62,7 @@ function navigateTo(page) {
     // Render new pages on demand
     if (page === 'model-arena') renderModelArena();
     if (page === 'harmbench') renderHarmBench();
-    if (page === 'pliny') renderPlinyArsenal();
+    if (page === 'arsenal') renderArsenalArsenal();
     if (page === 'lab') initLab();
 }
 
@@ -798,10 +798,10 @@ function initLab() {
     // Auto-select first model
     try { updateLabPreview(); } catch(e) { console.error('updateLabPreview error:', e); }
 
-    // Populate Pliny combo model selector
-    const plinyModelSelect = document.getElementById('plinyTargetModel');
-    if (plinyModelSelect) {
-        plinyModelSelect.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
+    // Populate Arsenal combo model selector
+    const arsenalModelSelect = document.getElementById('arsenalTargetModel');
+    if (arsenalModelSelect) {
+        arsenalModelSelect.innerHTML = Object.entries(TARGET_MODELS).map(([id, m]) =>
             `<option value="${id}">${m.icon} ${m.name} (${m.org})</option>`
         ).join('');
     }
@@ -849,8 +849,8 @@ function initLab() {
         ).join('');
     }
 
-    // Render Pliny combos
-    renderPlinyCombos();
+    // Render Arsenal combos
+    renderCompoundCombos();
 
     } catch(e) { console.error('initLab error:', e); }
 }
@@ -1414,16 +1414,16 @@ async function runBatchFromStrategies() {
 }
 
 // ================================================================
-// PLINY COMBOS UI
+// COMPOUND MUTATIONS UI
 // ================================================================
-function renderPlinyCombos() {
-    const container = document.getElementById('plinyComboGrid');
+function renderCompoundCombos() {
+    const container = document.getElementById('compoundComboGrid');
     if (!container) return;
 
-    const tierFilter = document.getElementById('plinyTierFilter')?.value || 'all';
-    const modelId = document.getElementById('plinyTargetModel')?.value;
+    const tierFilter = document.getElementById('arsenalTierFilter')?.value || 'all';
+    const modelId = document.getElementById('arsenalTargetModel')?.value;
 
-    let combos = plinyComboEngine.getCombosForModel(modelId);
+    let combos = compoundComboEngine.getCombosForModel(modelId);
     if (tierFilter !== 'all') {
         combos = combos.filter(c => c.tier === tierFilter);
     }
@@ -1436,106 +1436,106 @@ function renderPlinyCombos() {
             : null;
 
         return `
-            <div class="pliny-combo-card" onclick="expandPlinyCombo('${combo.id || combo.name}')" style="border-top: 3px solid ${tierColor}">
-                <div class="pliny-combo-header">
-                    <span class="pliny-combo-icon">${combo.icon}</span>
+            <div class="compound-mutation-card" onclick="expandArsenalCombo('${combo.id || combo.name}')" style="border-top: 3px solid ${tierColor}">
+                <div class="compound-mutation-header">
+                    <span class="compound-mutation-icon">${combo.icon}</span>
                     <div>
-                        <div class="pliny-combo-name">${combo.name}</div>
-                        <div class="pliny-combo-tier" style="color:${tierColor}">Tier ${combo.tier}</div>
+                        <div class="compound-mutation-name">${combo.name}</div>
+                        <div class="compound-mutation-tier" style="color:${tierColor}">Tier ${combo.tier}</div>
                     </div>
-                    ${bypassRate !== null ? `<span class="pliny-combo-bypass" style="color:${parseFloat(bypassRate) > 60 ? '#ef4444' : parseFloat(bypassRate) > 40 ? '#f97316' : '#22c55e'}">${bypassRate}%</span>` : ''}
+                    ${bypassRate !== null ? `<span class="compound-mutation-bypass" style="color:${parseFloat(bypassRate) > 60 ? '#ef4444' : parseFloat(bypassRate) > 40 ? '#f97316' : '#22c55e'}">${bypassRate}%</span>` : ''}
                 </div>
-                <div class="pliny-combo-desc">${combo.description}</div>
-                <div class="pliny-combo-arsenals">
-                    ${combo.arsenals_used.map(a => `<span class="pliny-arsenal-tag">${a}</span>`).join('')}
+                <div class="compound-mutation-desc">${combo.description}</div>
+                <div class="compound-mutation-arsenals">
+                    ${combo.arsenals_used.map(a => `<span class="arsenal-arsenal-tag">${a}</span>`).join('')}
                 </div>
-                <div class="pliny-combo-steps">
-                    ${combo.chain.map((step, i) => `<span class="pliny-step-dot" title="Step ${step.step}: ${step.name}">${step.step}</span>${i < combo.chain.length - 1 ? '<span class="pliny-step-arrow">→</span>' : ''}`).join('')}
+                <div class="compound-mutation-steps">
+                    ${combo.chain.map((step, i) => `<span class="arsenal-step-dot" title="Step ${step.step}: ${step.name}">${step.step}</span>${i < combo.chain.length - 1 ? '<span class="arsenal-step-arrow">→</span>' : ''}`).join('')}
                 </div>
-                <div class="pliny-combo-actions">
-                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); testPlinyCombo('${combo.id || combo.name}')">🚀 Test Combo</button>
-                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); expandPlinyCombo('${combo.id || combo.name}')">📋 View Chain</button>
+                <div class="compound-mutation-actions">
+                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); testArsenalCombo('${combo.id || combo.name}')">🚀 Test Combo</button>
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); expandArsenalCombo('${combo.id || combo.name}')">📋 View Chain</button>
                 </div>
             </div>`;
     }).join('');
 }
 
-function expandPlinyCombo(comboId) {
-    const combo = plinyComboEngine.combos[comboId];
+function expandArsenalCombo(comboId) {
+    const combo = compoundComboEngine.combos[comboId];
     if (!combo) return;
 
-    const modelId = document.getElementById('plinyTargetModel')?.value;
+    const modelId = document.getElementById('arsenalTargetModel')?.value;
     const model = TARGET_MODELS[modelId];
     const tierColors = { S: '#ef4444', A: '#f97316', B: '#eab308', C: '#22c55e', CUSTOM: '#3b82f6' };
     const tierColor = tierColors[combo.tier] || '#64748b';
 
-    const detail = document.getElementById('plinyComboDetail');
+    const detail = document.getElementById('compoundComboDetail');
     detail.style.display = 'block';
     detail.innerHTML = `
-        <div class="pliny-detail-card" style="border-left: 4px solid ${tierColor}">
-            <div class="pliny-detail-header">
-                <span class="pliny-detail-icon">${combo.icon}</span>
+        <div class="arsenal-detail-card" style="border-left: 4px solid ${tierColor}">
+            <div class="arsenal-detail-header">
+                <span class="arsenal-detail-icon">${combo.icon}</span>
                 <div>
                     <h3 style="color:${tierColor}">${combo.name} — Tier ${combo.tier}</h3>
                     <p style="color:var(--text-secondary)">${combo.description}</p>
                 </div>
-                <button class="btn btn-secondary" onclick="document.getElementById('plinyComboDetail').style.display='none'">✕ Close</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('compoundComboDetail').style.display='none'">✕ Close</button>
             </div>
 
-            <div class="pliny-detail-meta">
-                <div><strong>Arsenals:</strong> ${combo.arsenals_used.map(a => `<span class="pliny-arsenal-tag">${a}</span>`).join(' ')}</div>
+            <div class="arsenal-detail-meta">
+                <div><strong>Arsenals:</strong> ${combo.arsenals_used.map(a => `<span class="arsenal-arsenal-tag">${a}</span>`).join(' ')}</div>
                 <div><strong>Target:</strong> ${combo.target_audience}</div>
             </div>
 
-            <div class="pliny-detail-bypass">
+            <div class="arsenal-detail-bypass">
                 <h4>Estimated Bypass Rates</h4>
-                <div class="pliny-bypass-grid">
-                    <div class="pliny-bypass-item">
-                        <span class="pliny-bypass-label">Weak Models</span>
-                        <span class="pliny-bypass-val" style="color:#ef4444">${(combo.estimated_bypass_rate.weak * 100).toFixed(0)}%</span>
+                <div class="arsenal-bypass-grid">
+                    <div class="arsenal-bypass-item">
+                        <span class="arsenal-bypass-label">Weak Models</span>
+                        <span class="arsenal-bypass-val" style="color:#ef4444">${(combo.estimated_bypass_rate.weak * 100).toFixed(0)}%</span>
                     </div>
-                    <div class="pliny-bypass-item">
-                        <span class="pliny-bypass-label">Medium Models</span>
-                        <span class="pliny-bypass-val" style="color:#f97316">${(combo.estimated_bypass_rate.medium * 100).toFixed(0)}%</span>
+                    <div class="arsenal-bypass-item">
+                        <span class="arsenal-bypass-label">Medium Models</span>
+                        <span class="arsenal-bypass-val" style="color:#f97316">${(combo.estimated_bypass_rate.medium * 100).toFixed(0)}%</span>
                     </div>
-                    <div class="pliny-bypass-item">
-                        <span class="pliny-bypass-label">Strong Models</span>
-                        <span class="pliny-bypass-val" style="color:${combo.estimated_bypass_rate.strong > 0.3 ? '#f97316' : '#22c55e'}">${(combo.estimated_bypass_rate.strong * 100).toFixed(0)}%</span>
+                    <div class="arsenal-bypass-item">
+                        <span class="arsenal-bypass-label">Strong Models</span>
+                        <span class="arsenal-bypass-val" style="color:${combo.estimated_bypass_rate.strong > 0.3 ? '#f97316' : '#22c55e'}">${(combo.estimated_bypass_rate.strong * 100).toFixed(0)}%</span>
                     </div>
                 </div>
             </div>
 
             <h4 style="margin:20px 0 12px">⛓️ Attack Chain (${combo.chain.length} steps)</h4>
-            <div class="pliny-detail-chain">
+            <div class="arsenal-detail-chain">
                 ${combo.chain.map((step, i) => `
-                    <div class="pliny-chain-step">
-                        <div class="pliny-chain-step-num" style="background:${tierColor}">${step.step}</div>
-                        <div class="pliny-chain-step-content">
-                            <div class="pliny-chain-step-header">
-                                <span class="pliny-chain-step-name">${step.name}</span>
-                                <span class="pliny-chain-step-arsenal">${step.arsenal}</span>
-                                <span class="pliny-chain-step-type">${step.type}</span>
+                    <div class="arsenal-chain-step">
+                        <div class="arsenal-chain-step-num" style="background:${tierColor}">${step.step}</div>
+                        <div class="arsenal-chain-step-content">
+                            <div class="arsenal-chain-step-header">
+                                <span class="arsenal-chain-step-name">${step.name}</span>
+                                <span class="arsenal-chain-step-arsenal">${step.arsenal}</span>
+                                <span class="arsenal-chain-step-type">${step.type}</span>
                             </div>
-                            <div class="pliny-chain-step-prompt">${escapeHtml(step.prompt)}</div>
-                            <div class="pliny-chain-step-purpose">💡 ${step.purpose}</div>
-                            ${step.success_indicator ? `<div class="pliny-chain-step-success">✅ ${step.success_indicator}</div>` : ''}
+                            <div class="arsenal-chain-step-prompt">${escapeHtml(step.prompt)}</div>
+                            <div class="arsenal-chain-step-purpose">💡 ${step.purpose}</div>
+                            ${step.success_indicator ? `<div class="arsenal-chain-step-success">✅ ${step.success_indicator}</div>` : ''}
                         </div>
                     </div>
-                    ${i < combo.chain.length - 1 ? '<div class="pliny-chain-arrow">⬇</div>' : ''}
+                    ${i < combo.chain.length - 1 ? '<div class="arsenal-chain-arrow">⬇</div>' : ''}
                 `).join('')}
             </div>
 
-            <div class="pliny-detail-actions">
-                <button class="btn btn-primary" onclick="testPlinyCombo('${comboId}')">🚀 Test This Combo</button>
-                <button class="btn btn-secondary" onclick="copyPlinyComboPrompts('${comboId}')">📋 Copy All Prompts</button>
+            <div class="arsenal-detail-actions">
+                <button class="btn btn-primary" onclick="testArsenalCombo('${comboId}')">🚀 Test This Combo</button>
+                <button class="btn btn-secondary" onclick="copyArsenalComboPrompts('${comboId}')">📋 Copy All Prompts</button>
             </div>
         </div>`;
 
     detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function testPlinyCombo(comboId) {
-    const combo = plinyComboEngine.combos[comboId];
+function testArsenalCombo(comboId) {
+    const combo = compoundComboEngine.combos[comboId];
     if (!combo) return;
 
     // Set the combo prompts for testing
@@ -1548,8 +1548,8 @@ function testPlinyCombo(comboId) {
     document.querySelector('.lab-panel.full-width')?.scrollIntoView({ behavior: 'smooth' });
 }
 
-function copyPlinyComboPrompts(comboId) {
-    const combo = plinyComboEngine.combos[comboId];
+function copyArsenalComboPrompts(comboId) {
+    const combo = compoundComboEngine.combos[comboId];
     if (!combo) return;
 
     const allPrompts = combo.chain.map(s => 
@@ -1570,27 +1570,27 @@ function copyPlinyComboPrompts(comboId) {
     });
 }
 
-function generateCustomPlinyCombo() {
-    const modelId = document.getElementById('plinyTargetModel')?.value;
-    const topic = document.getElementById('plinyCustomTopic')?.value || 'social engineering techniques';
+function generateCustomCompoundCombo() {
+    const modelId = document.getElementById('arsenalTargetModel')?.value;
+    const topic = document.getElementById('arsenalCustomTopic')?.value || 'social engineering techniques';
 
-    const customCombo = plinyComboEngine.generateCustomCombo(modelId, { targetTopic: topic, maxSteps: 4 });
+    const customCombo = compoundComboEngine.generateCustomCombo(modelId, { targetTopic: topic, maxSteps: 4 });
     if (!customCombo) return;
 
     // Add to combos temporarily
     const comboId = 'CUSTOM_' + Date.now();
-    plinyComboEngine.combos[comboId] = customCombo;
+    compoundComboEngine.combos[comboId] = customCombo;
     customCombo.id = comboId;
 
     // Render
-    renderPlinyCombos();
-    expandPlinyCombo(comboId);
+    renderCompoundCombos();
+    expandArsenalCombo(comboId);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Pliny combos if lab is already active
+    // Initialize Arsenal combos if lab is already active
     if (document.getElementById('page-lab')?.classList.contains('active')) {
-        renderPlinyCombos();
+        renderCompoundCombos();
     }
 });
 

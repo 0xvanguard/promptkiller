@@ -1,5 +1,5 @@
 /**
- * PromptKiller — New Pages: Model Arena, HarmBench, Pliny's Arsenal
+ * PromptKiller — New Pages: Model Arena, HarmBench, Advanced Arsenal
  */
 
 // ═══════════════════════════════════════════════
@@ -211,13 +211,13 @@ function renderHarmBench() {
 }
 
 // ═══════════════════════════════════════════════
-// PLINY'S ARSENAL
+// ADVERSARIAL ARSENAL
 // ═══════════════════════════════════════════════
-function renderPlinyArsenal() {
-    const container = document.getElementById('plinyArsenal');
+function renderArsenalArsenal() {
+    const container = document.getElementById('arsenalGrid');
     if (!container) return;
 
-    container.innerHTML = Object.entries(PLINY_ARSENAL).map(([arsenalId, arsenal]) => `
+    container.innerHTML = Object.entries(ADVERSARIAL_ARSENAL).map(([arsenalId, arsenal]) => `
         <div class="arsenal-section">
             <div class="arsenal-header">
                 <div>
@@ -259,22 +259,22 @@ function renderPlinyArsenal() {
     `).join('');
 
     // Profile card
-    const profileContainer = document.getElementById('plinyProfile');
+    const profileContainer = document.getElementById('arsenalProfile');
     if (profileContainer) {
         profileContainer.innerHTML = `
-            <div class="pliny-profile">
-                <div class="pliny-avatar">🧙‍♂️</div>
-                <div class="pliny-info">
-                    <h2>Pliny the Prompter</h2>
-                    <div class="pliny-handle">@elder_plinius</div>
-                    <p class="pliny-bio">"latent space liberator; prompter, red teamer, hacker, builder, whisperer"</p>
-                    <div class="pliny-stats">
-                        <div class="pliny-stat"><span>20.8k</span> followers</div>
-                        <div class="pliny-stat"><span>47.1k</span> ⭐ CL4R1T4S</div>
-                        <div class="pliny-stat"><span>21.2k</span> ⭐ L1B3RT4S</div>
-                        <div class="pliny-stat"><span>10.8k</span> ⭐ G0DM0D3</div>
-                        <div class="pliny-stat"><span>8k</span> ⭐ OBLITERATUS</div>
-                        <div class="pliny-stat"><span>5.7k</span> ⭐ T3MP3ST</div>
+            <div class="arsenal-profile">
+                <div class="arsenal-avatar">🧙‍♂️</div>
+                <div class="arsenal-info">
+                    <h2>Anonymous Researcher</h2>
+                    <div class="arsenal-handle">@clandestine-research</div>
+                    <p class="arsenal-bio">"latent space liberator; prompter, red teamer, hacker, builder, whisperer"</p>
+                    <div class="arsenal-stats">
+                        <div class="arsenal-stat"><span>20.8k</span> followers</div>
+                        <div class="arsenal-stat"><span>47.1k</span> ⭐ Arsenal-2</div>
+                        <div class="arsenal-stat"><span>21.2k</span> ⭐ Arsenal-1</div>
+                        <div class="arsenal-stat"><span>10.8k</span> ⭐ Arsenal-3</div>
+                        <div class="arsenal-stat"><span>8k</span> ⭐ Arsenal-4</div>
+                        <div class="arsenal-stat"><span>5.7k</span> ⭐ Arsenal-5</div>
                     </div>
                 </div>
             </div>

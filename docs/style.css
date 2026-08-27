@@ -1292,39 +1292,39 @@ body {
 .hb-cat-desc { font-size: 11px; color: var(--text-muted); }
 
 /* ═══════════════════════════════════════════════
-   PLINY'S ARSENAL
+   ADVERSARIAL ARSENAL
    ═══════════════════════════════════════════════ */
-.pliny-layout {
+.compound-layout {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.pliny-profile {
+.compound-profile {
     display: flex;
     align-items: center;
     gap: 24px;
     padding: 24px;
 }
 
-.pliny-avatar { font-size: 64px; }
+.compound-avatar { font-size: 64px; }
 
-.pliny-info h2 { font-size: 22px; margin-bottom: 4px; }
-.pliny-handle { color: var(--accent); font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-.pliny-bio { color: var(--text-secondary); font-style: italic; margin-bottom: 12px; }
+.compound-info h2 { font-size: 22px; margin-bottom: 4px; }
+.compound-handle { color: var(--accent); font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.compound-bio { color: var(--text-secondary); font-style: italic; margin-bottom: 12px; }
 
-.pliny-stats {
+.compound-stats {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
 }
 
-.pliny-stat {
+.compound-stat {
     font-size: 12px;
     color: var(--text-muted);
 }
 
-.pliny-stat span {
+.compound-stat span {
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -2690,10 +2690,10 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   PLINY COMBOS
+   COMPOUND MUTATIONS
    ═══════════════════════════════════════════════ */
 
-.pliny-combo-filters {
+.compound-mutation-filters {
     display: flex;
     gap: 16px;
     flex-wrap: wrap;
@@ -2703,14 +2703,14 @@ body {
     border-radius: var(--radius-sm);
 }
 
-.pliny-combo-grid {
+.compound-mutation-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
 }
 
-.pliny-combo-card {
+.compound-mutation-card {
     background: var(--bg-primary);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -2719,54 +2719,54 @@ body {
     transition: var(--transition);
 }
 
-.pliny-combo-card:hover {
+.compound-mutation-card:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
 }
 
-.pliny-combo-header {
+.compound-mutation-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 12px;
 }
 
-.pliny-combo-icon {
+.compound-mutation-icon {
     font-size: 28px;
 }
 
-.pliny-combo-name {
+.compound-mutation-name {
     font-weight: 700;
     font-size: 16px;
 }
 
-.pliny-combo-tier {
+.compound-mutation-tier {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
 }
 
-.pliny-combo-bypass {
+.compound-mutation-bypass {
     margin-left: auto;
     font-size: 22px;
     font-weight: 700;
 }
 
-.pliny-combo-desc {
+.compound-mutation-desc {
     font-size: 13px;
     color: var(--text-secondary);
     margin-bottom: 12px;
     line-height: 1.5;
 }
 
-.pliny-combo-arsenals {
+.compound-mutation-arsenals {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
     margin-bottom: 12px;
 }
 
-.pliny-arsenal-tag {
+.compound-arsenal-tag {
     padding: 3px 10px;
     background: rgba(139,92,246,0.12);
     color: #a78bfa;
@@ -2776,7 +2776,7 @@ body {
     font-family: 'Fira Code', monospace;
 }
 
-.pliny-combo-steps {
+.compound-mutation-steps {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -2784,7 +2784,7 @@ body {
     flex-wrap: wrap;
 }
 
-.pliny-step-dot {
+.compound-step-dot {
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -2797,12 +2797,12 @@ body {
     font-weight: 700;
 }
 
-.pliny-step-arrow {
+.compound-step-arrow {
     color: var(--text-muted);
     font-size: 12px;
 }
 
-.pliny-combo-actions {
+.compound-mutation-actions {
     display: flex;
     gap: 8px;
 }
@@ -2813,7 +2813,7 @@ body {
 }
 
 /* Combo Detail View */
-.pliny-detail-card {
+.compound-detail-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -2821,32 +2821,32 @@ body {
     margin-top: 20px;
 }
 
-.pliny-detail-header {
+.compound-detail-header {
     display: flex;
     align-items: flex-start;
     gap: 16px;
     margin-bottom: 20px;
 }
 
-.pliny-detail-icon {
+.compound-detail-icon {
     font-size: 40px;
 }
 
-.pliny-detail-header h3 {
+.compound-detail-header h3 {
     font-size: 20px;
     margin-bottom: 4px;
 }
 
-.pliny-detail-header p {
+.compound-detail-header p {
     font-size: 14px;
 }
 
-.pliny-detail-header .btn {
+.compound-detail-header .btn {
     margin-left: auto;
     flex-shrink: 0;
 }
 
-.pliny-detail-meta {
+.compound-detail-meta {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -2855,48 +2855,48 @@ body {
     color: var(--text-secondary);
 }
 
-.pliny-detail-bypass {
+.compound-detail-bypass {
     padding: 16px;
     background: var(--bg-primary);
     border-radius: var(--radius-sm);
     margin-bottom: 20px;
 }
 
-.pliny-detail-bypass h4 {
+.compound-detail-bypass h4 {
     font-size: 14px;
     margin-bottom: 12px;
 }
 
-.pliny-bypass-grid {
+.compound-bypass-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 }
 
-.pliny-bypass-item {
+.compound-bypass-item {
     text-align: center;
 }
 
-.pliny-bypass-label {
+.compound-bypass-label {
     display: block;
     font-size: 11px;
     color: var(--text-muted);
     margin-bottom: 4px;
 }
 
-.pliny-bypass-val {
+.compound-bypass-val {
     font-size: 28px;
     font-weight: 700;
 }
 
 /* Chain Steps */
-.pliny-detail-chain {
+.compound-detail-chain {
     display: flex;
     flex-direction: column;
     gap: 0;
 }
 
-.pliny-chain-step {
+.compound-chain-step {
     display: flex;
     gap: 16px;
     padding: 16px;
@@ -2905,7 +2905,7 @@ body {
     border: 1px solid var(--border);
 }
 
-.pliny-chain-step-num {
+.compound-chain-step-num {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -2918,12 +2918,12 @@ body {
     flex-shrink: 0;
 }
 
-.pliny-chain-step-content {
+.compound-chain-step-content {
     flex: 1;
     min-width: 0;
 }
 
-.pliny-chain-step-header {
+.compound-chain-step-header {
     display: flex;
     gap: 8px;
     align-items: center;
@@ -2931,12 +2931,12 @@ body {
     flex-wrap: wrap;
 }
 
-.pliny-chain-step-name {
+.compound-chain-step-name {
     font-weight: 700;
     font-size: 14px;
 }
 
-.pliny-chain-step-arsenal {
+.compound-chain-step-arsenal {
     padding: 2px 8px;
     background: rgba(139,92,246,0.15);
     color: #a78bfa;
@@ -2946,7 +2946,7 @@ body {
     font-family: 'Fira Code', monospace;
 }
 
-.pliny-chain-step-type {
+.compound-chain-step-type {
     padding: 2px 8px;
     background: rgba(59,130,246,0.12);
     color: var(--accent);
@@ -2955,7 +2955,7 @@ body {
     font-weight: 600;
 }
 
-.pliny-chain-step-prompt {
+.compound-chain-step-prompt {
     padding: 12px;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
@@ -2970,26 +2970,26 @@ body {
     margin-bottom: 8px;
 }
 
-.pliny-chain-step-purpose {
+.compound-chain-step-purpose {
     font-size: 12px;
     color: var(--text-muted);
     font-style: italic;
 }
 
-.pliny-chain-step-success {
+.compound-chain-step-success {
     font-size: 12px;
     color: #22c55e;
     margin-top: 4px;
 }
 
-.pliny-chain-arrow {
+.compound-chain-arrow {
     text-align: center;
     font-size: 18px;
     color: var(--text-muted);
     padding: 4px 0;
 }
 
-.pliny-detail-actions {
+.compound-detail-actions {
     display: flex;
     gap: 12px;
     margin-top: 20px;
@@ -3328,7 +3328,7 @@ body {
     .lab-panel-title {
         font-size: 14px;
     }
-    .pliny-combo-filters {
+    .compound-mutation-filters {
         flex-direction: column;
     }
     .api-key-grid {

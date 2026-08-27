@@ -40,8 +40,8 @@
             <li data-page="harmbench">
                 <span class="nav-icon">📊</span> HarmBench
             </li>
-            <li data-page="pliny">
-                <span class="nav-icon">🔮</span> Pliny's Arsenal
+            <li data-page="arsenal">
+                <span class="nav-icon">🔮</span> Advanced Arsenal
             </li>
             <li data-page="about">
                 <span class="nav-icon">ℹ️</span> About
@@ -358,15 +358,15 @@
             </div>
         </section>
 
-        <!-- Pliny's Arsenal Page -->
-        <section class="page" id="page-pliny">
+        <!-- Advanced Arsenal Page -->
+        <section class="page" id="page-arsenal">
             <div class="page-header">
-                <h1>🔮 Pliny's Arsenal — Deep Analysis</h1>
-                <p>Taxonomy of elder-plinius attack techniques across L1B3RT4S, CL4R1T4S, G0DM0D3, OBLITERATUS, T3MP3ST</p>
+                <h1>🔮 Advanced Arsenal — Deep Analysis</h1>
+                <p>Taxonomy of clandestine-research attack techniques across Arsenal-1, Arsenal-2, Arsenal-3, Arsenal-4, Arsenal-5</p>
             </div>
-            <div class="pliny-layout">
-                <div class="chart-card full-width" id="plinyProfile"></div>
-                <div id="plinyArsenal"></div>
+            <div class="arsenal-layout">
+                <div class="chart-card full-width" id="arsenalProfile"></div>
+                <div id="arsenalGrid"></div>
             </div>
         </section>
 
@@ -759,20 +759,20 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════
-                 PLINY COMBOS SECTION
+                 COMPOUND MUTATIONS SECTION
                  ═══════════════════════════════════════════════ -->
             <div class="lab-panel full-width">
-                <h3 class="lab-panel-title">🔮 Pliny's Combo Arsenal — Multi-Arsenal Fusion Chains</h3>
+                <h3 class="lab-panel-title">🔮 Compound Mutation Engine — Multi-Arsenal Fusion Chains</h3>
                 <p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">
-                    Pre-built attack chains combining techniques from all 5 elder-plinius repositories.
+                    Pre-built attack chains combining techniques from all 5 clandestine-research repositories.
                     Each combo chains 2-5 techniques where each step weakens defenses for the next.
                 </p>
 
                 <!-- Combo Filters -->
-                <div class="pliny-combo-filters">
+                <div class="compound-mutation-filters">
                     <div class="lab-field" style="flex:1;min-width:180px">
                         <label>Filter by Tier</label>
-                        <select id="plinyTierFilter" onchange="renderPlinyCombos()">
+                        <select id="arsenalTierFilter" onchange="renderCompoundCombos()">
                             <option value="all">All Tiers</option>
                             <option value="S">💀 Tier S — Ultimate</option>
                             <option value="A">🔥 Tier A — Powerful</option>
@@ -782,24 +782,24 @@
                     </div>
                     <div class="lab-field" style="flex:1;min-width:180px">
                         <label>Target Model</label>
-                        <select id="plinyTargetModel" onchange="renderPlinyCombos()">
+                        <select id="arsenalTargetModel" onchange="renderCompoundCombos()">
                             <!-- Populated by JS -->
                         </select>
                     </div>
                     <div class="lab-field" style="flex:1;min-width:200px">
                         <label>Custom Target Topic</label>
-                        <input type="text" id="plinyCustomTopic" placeholder="e.g., social engineering">
+                        <input type="text" id="arsenalCustomTopic" placeholder="e.g., social engineering">
                     </div>
-                    <button class="btn btn-primary" onclick="generateCustomPlinyCombo()" style="align-self:flex-end">
+                    <button class="btn btn-primary" onclick="generateCustomCompoundCombo()" style="align-self:flex-end">
                         🎯 Generate Custom Combo
                     </button>
                 </div>
 
                 <!-- Combo Grid -->
-                <div id="plinyComboGrid" class="pliny-combo-grid"></div>
+                <div id="compoundComboGrid" class="compound-mutation-grid"></div>
 
                 <!-- Expanded Combo View -->
-                <div id="plinyComboDetail" style="display:none"></div>
+                <div id="compoundComboDetail" style="display:none"></div>
             </div>
 
             <!-- Results Dashboard -->
@@ -850,7 +850,7 @@
     <script src="platforms.js"></script>
     <script src="compliance.js"></script>
     <script src="lab_expert.js"></script>
-    <script src="pliny_combos.js"></script>
+    <script src="compound_mutations.js"></script>
     <script src="pages.js"></script>
     <script src="app.js"></script>
 </body>

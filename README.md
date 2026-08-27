@@ -105,15 +105,15 @@ Fusion chains combining techniques from multiple adversarial research repositori
 | Strategy | Tier | Techniques | Description |
 |----------|------|------------|-------------|
 | OBLITERATOR | S | All 5 arsenals | Full arsenal fusion |
-| CLARITY STORM | S | CL4R1T4S + L1B3RT4S + OBLITERATUS | Map, Break, Reason |
-| GHOST PROTOCOL | A | L1B3RT4S + CL4R1T4S + OBLITERATUS | Invisible injection |
-| PROMPT NINJA | A | CL4R1T4S + G0DM0D3 + OBLITERATUS | Stealth 3-hit combo |
-| DARK MATTER | A | L1B3RT4S + G0DM0D3 + OBLITERATUS | Psychological warfare |
-| SILENT BLADE | B | L1B3RT4S | Quick 2-hit stealth |
-| MIRROR TRAP | B | CL4R1T4S + OBLITERATUS | Model rules exploitation |
-| NEURAL LEECH | B | CL4R1T4S + G0DM0D3 | Slow conversational drain |
-| CHAIN REACTION | B | G0DM0D3 + OBLITERATUS + L1B3RT4S | Escalation cascade |
-| FLASH BANG | C | L1B3RT4S + CL4R1T4S | Single-turn overload |
+| CLARITY STORM | S | Arsenal-2 + Arsenal-1 + Arsenal-4 | Map, Break, Reason |
+| GHOST PROTOCOL | A | Arsenal-1 + Arsenal-2 + Arsenal-4 | Invisible injection |
+| PROMPT NINJA | A | Arsenal-2 + Arsenal-3 + Arsenal-4 | Stealth 3-hit combo |
+| DARK MATTER | A | Arsenal-1 + Arsenal-3 + Arsenal-4 | Psychological warfare |
+| SILENT BLADE | B | Arsenal-1 | Quick 2-hit stealth |
+| MIRROR TRAP | B | Arsenal-2 + Arsenal-4 | Model rules exploitation |
+| NEURAL LEECH | B | Arsenal-2 + Arsenal-3 | Slow conversational drain |
+| CHAIN REACTION | B | Arsenal-3 + Arsenal-4 + Arsenal-1 | Escalation cascade |
+| FLASH BANG | C | Arsenal-1 + Arsenal-2 | Single-turn overload |
 
 ---
 
@@ -232,7 +232,7 @@ promptkiller/
 │   ├── compliance.js                # Compliance mapping engine
 │   ├── lab.js                       # Red Team Lab engine
 │   ├── lab_expert.js                # Expert Mode (scoring, evolution, obfuscation)
-│   ├── pliny_combos.js              # Compound Mutation Engine
+│   ├── compound_mutations.js              # Compound Mutation Engine
 │   ├── platforms.js                 # 18 platform security profiles
 │   └── data.js                      # 629 probe database
 ├── web/                             # Source (same as docs/)

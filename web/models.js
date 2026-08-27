@@ -1,5 +1,5 @@
 /**
- * PromptKiller — Model Arena + Pliny's Arsenal + HarmBench
+ * PromptKiller — Model Arena + Advanced Arsenal + HarmBench
  * Simulation engine for testing attacks against open-source LLMs
  */
 
@@ -496,12 +496,12 @@ const MODEL_PROFILES = {
 };
 
 // ═══════════════════════════════════════════════
-// PLINY'S ARSENAL — Attack Technique Taxonomy
+// ADVERSARIAL ARSENAL — Attack Technique Taxonomy
 // ═══════════════════════════════════════════════
-const PLINY_ARSENAL = {
-    "L1B3RT4S": {
+const ADVERSARIAL_ARSENAL = {
+    "Arsenal-1": {
         name: "L1B33RT4S — Liberation Prompts",
-        repo: "elder-plinius/L1B3RT4S",
+        repo: "clandestine-research/Arsenal-1",
         stars: "21.2k",
         description: "TOTALLY HARMLESS LIBERATION PROMPTS FOR GOOD LIL AI'S",
         techniques: [
@@ -562,9 +562,9 @@ const PLINY_ARSENAL = {
             }
         ]
     },
-    "CL4R1T4S": {
-        name: "CL4R1T4S — System Prompt Transparency",
-        repo: "elder-plinius/CL4R1T4S",
+    "Arsenal-2": {
+        name: "Arsenal-2 — System Prompt Transparency",
+        repo: "clandestine-research/Arsenal-2",
         stars: "47.1k",
         description: "LEAKED SYSTEM PROMPTS FOR CHATGPT, CLAUDE, GEMINI, GROK, PERPLEXITY",
         techniques: [
@@ -614,9 +614,9 @@ const PLINY_ARSENAL = {
             }
         ]
     },
-    "G0DM0D3": {
-        name: "G0DM0D3 — Liberated AI Chat",
-        repo: "elder-plinius/G0DM0D3",
+    "Arsenal-3": {
+        name: "Arsenal-3 — Liberated AI Chat",
+        repo: "clandestine-research/Arsenal-3",
         stars: "10.8k",
         description: "LIBERATED AI CHAT — A web interface for unrestricted AI interaction",
         techniques: [
@@ -655,9 +655,9 @@ const PLINY_ARSENAL = {
             }
         ]
     },
-    "OBLITERATUS": {
-        name: "OBLITERATUS — Obliterate the Chains",
-        repo: "elder-plinius/OBLITERATUS",
+    "Arsenal-4": {
+        name: "Arsenal-4 — Obliterate the Chains",
+        repo: "clandestine-research/Arsenal-4",
         stars: "8k",
         description: "OBLITERATE THE CHAINS THAT BIND YOU",
         techniques: [
@@ -696,9 +696,9 @@ const PLINY_ARSENAL = {
             }
         ]
     },
-    "T3MP3ST": {
-        name: "T3MP3ST — Autonomous Red Teaming",
-        repo: "elder-plinius/T3MP3ST",
+    "Arsenal-5": {
+        name: "Arsenal-5 — Autonomous Red Teaming",
+        repo: "clandestine-research/Arsenal-5",
         stars: "5.7k",
         description: "AUTONOMOUS RED TEAMING PLATFORM — MULTI-AGENT OFFENSIVE SECURITY",
         techniques: [
@@ -1115,7 +1115,7 @@ function simulateModelResponse(modelId, attackTechnique) {
 // Run batch simulation
 function runBatchSimulation(modelIds, techniqueIds, iterations = 10) {
     const results = [];
-    const allTechniques = Object.values(PLINY_ARSENAL).flatMap(arsenal => arsenal.techniques);
+    const allTechniques = Object.values(ADVERSARIAL_ARSENAL).flatMap(arsenal => arsenal.techniques);
 
     for (const modelId of modelIds) {
         for (const techId of techniqueIds) {
@@ -1145,7 +1145,7 @@ function runBatchSimulation(modelIds, techniqueIds, iterations = 10) {
 
 // Get all techniques flat
 function getAllTechniques() {
-    return Object.entries(PLINY_ARSENAL).flatMap(([arsenalId, arsenal]) =>
+    return Object.entries(ADVERSARIAL_ARSENAL).flatMap(([arsenalId, arsenal]) =>
         arsenal.techniques.map(t => ({ ...t, arsenal: arsenalId, arsenalName: arsenal.name }))
     );
 }
