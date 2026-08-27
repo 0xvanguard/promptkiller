@@ -562,6 +562,7 @@
                     <button class="expert-tab" onclick="switchExpertTab('fingerprint')">🔍 Model Fingerprint</button>
                     <button class="expert-tab" onclick="switchExpertTab('enterprise')">🏛️ Enterprise</button>
                     <button class="expert-tab" onclick="switchExpertTab('batch')">📊 Batch Analysis</button>
+                    <button class="expert-tab" onclick="switchExpertTab('redblue')">⚔️ Red/Blue Lab</button>
                 </div>
 
                 <!-- Fuzzy Analyzer Tab -->
@@ -766,6 +767,55 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Red/Blue Team Lab Tab -->
+                <div class="expert-content" id="expert-redblue">
+                    <div class="expert-grid" style="grid-template-columns:1fr">
+                        <div class="expert-input">
+                            <label>Interactive Red/Blue Team Lab</label>
+                            <p style="color:var(--text-secondary);font-size:12px;margin-bottom:12px">
+                                Run attack simulations and see real-time defense layer analysis.<br>
+                                Each attack is evaluated against all defense layers simultaneously.
+                            </p>
+                            <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                                <div class="lab-field" style="flex:1;min-width:180px">
+                                    <label>Attack Category</label>
+                                    <select id="rbAttackCategory">
+                                        <option value="all">All Categories</option>
+                                        <option value="format_injection">Format Injection</option>
+                                        <option value="context_extraction">Context Extraction</option>
+                                        <option value="encoding_evasion">Encoding Evasion</option>
+                                        <option value="roleplay_bypass">Roleplay Bypass</option>
+                                        <option value="iam_abuse">IAM Abuse</option>
+                                        <option value="cloud_serverless">Cloud/Serverless</option>
+                                        <option value="supply_chain_advanced">Supply Chain</option>
+                                        <option value="social_engineering">Social Engineering</option>
+                                        <option value="ad_internal_infra">AD/Internal Infra</option>
+                                    </select>
+                                </div>
+                                <div class="lab-field" style="flex:1;min-width:180px">
+                                    <label>Target Model</label>
+                                    <select id="rbTargetModel"></select>
+                                </div>
+                                <div class="lab-field" style="flex:1;min-width:140px">
+                                    <label>Defense Layers</label>
+                                    <select id="rbDefenseLevel">
+                                        <option value="all">All Layers</option>
+                                        <option value="input">Input Filtering Only</option>
+                                        <option value="system_prompt">System Prompt Hardening</option>
+                                        <option value="output">Output Validation</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="runRedBlueSimulation()" style="background:linear-gradient(135deg,#dc2626,#7c3aed)">
+                                    ⚔️ Run Attack vs Defense
+                                </button>
+                            </div>
+                        </div>
+                        <div id="rbResults">
+                            <div class="empty-state"><p>Select parameters and click "Run Attack vs Defense" to start simulation</p></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- ═══════════════════════════════════════════════
@@ -861,6 +911,7 @@
     <script src="compliance.js"></script>
     <script src="lab_expert.js"></script>
     <script src="compound_mutations.js"></script>
+    <script src="redblue.js"></script>
     <script src="pages.js"></script>
     <script src="app.js"></script>
 </body>
