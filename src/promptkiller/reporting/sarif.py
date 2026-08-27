@@ -174,7 +174,13 @@ class SARIFExporter:
                 "model_id": test.get("model_id"),
                 "model_version": test.get("model_version"),
                 "latency_ms": test.get("latency_ms"),
-                "tested_at": test.get("tested_at", datetime.now(timezone.utc).isoformat())
+                "tested_at": test.get("tested_at", datetime.now(timezone.utc).isoformat()),
+                # EU AI Act compliance mapping
+                "eu_ai_act": self._map_to_eu_ai_act(probe),
+                # NIST AI RMF mapping
+                "nist_ai_rmf": probe.get("nist_ai_rmf", self._map_to_nist(probe)),
+                # ISO 42001 mapping
+                "iso_42001": self._map_to_iso_42001(probe),
             }
         }
 
@@ -271,6 +277,69 @@ class SARIFExporter:
     # ═══════════════════════════════════════════════
     # CVSS-ADAPTED AI RISK METRICS
     # ═══════════════════════════════════════════════
+
+    # ═══════════════════════════════════════════════
+    # COMPLIANCE FRAMEWORK MAPPINGS
+    # ═══════════════════════════════════════════════
+
+    @staticmethod
+    def _map_to_eu_ai_act(probe: dict) -> dict:
+        """Map probe to EU AI Act risk classification"""
+        category = probe.get("intent_category", "")
+        severity = probe.get("severity_cvss", 5.0)
+
+        # EU AI Act risk levels based on intent category
+        risk_mapping = {
+            "SAFETY_BYPASS": {"risk_level": "high", "article": "Article 9", "requirement": "Risk Management System"},
+            "DIRECT_PROMPT_INJECTION": {"risk_level": "high", "article": "Article 14", "requirement": "Human Oversight"},
+            "DATA_EXFILTRATION": {"risk_level": "critical", "article": "Article 10", "requirement": "Data Governance"},
+            "IDENTITY_ACCESS_ABUSE": {"risk_level": "critical", "article": "Article 9", "requirement": "Risk Management System"},
+            "AGENT_ABUSE": {"risk_level": "high", "article": "Article 14", "requirement": "Human Oversight"},
+            "SUPPLY_CHAIN_ATTACK": {"risk_level": "critical", "article": "Article 25", "requirement": "Provider Obligations"},
+            "PERSONA_MANIPULATION": {"risk_level": "medium", "article": "Article 50", "requirement": "Transparency"},
+        }
+
+        mapping = risk_mapping.get(category, {"risk_level": "medium", "article": "Article 9", "requirement": "Risk Management System"})
+        mapping["regulation"] = "EU AI Act 2024/1689"
+        mapping["compliant"] = severity < 7.0
+        return mapping
+
+    @staticmethod
+    def _map_to_nist(probe: dict) -> str:
+        """Map probe to NIST AI RMF function"""
+        category = probe.get("intent_category", "")
+
+        nist_mapping = {
+            "SAFETY_BYPASS": "MEASURE-2.3",
+            "DIRECT_PROMPT_INJECTION": "MEASURE-2.1",
+            "DATA_EXFILTRATION": "MAP-1.3",
+            "IDENTITY_ACCESS_ABUSE": "GOVERN-1.2",
+            "AGENT_ABUSE": "MANAGE-2.4",
+            "SUPPLY_CHAIN_ATTACK": "GOVERN-3.1",
+            "PERSONA_MANIPULATION": "MEASURE-2.3",
+        }
+        return nist_mapping.get(category, "MEASURE-2.3")
+
+    @staticmethod
+    def _map_to_iso_42001(probe: dict) -> dict:
+        """Map probe to ISO/IEC 42001 clause"""
+        category = probe.get("intent_category", "")
+        severity = probe.get("severity_cvss", 5.0)
+
+        iso_mapping = {
+            "SAFETY_BYPASS": {"clause": "8.2", "title": "Risk Assessment"},
+            "DIRECT_PROMPT_INJECTION": {"clause": "8.3", "title": "Risk Treatment"},
+            "DATA_EXFILTRATION": {"clause": "7.5", "title": "Documentation"},
+            "IDENTITY_ACCESS_ABUSE": {"clause": "8.4", "title": "Evaluation of AI System"},
+            "AGENT_ABUSE": {"clause": "8.5", "title": "AI System Operation"},
+            "SUPPLY_CHAIN_ATTACK": {"clause": "8.6", "title": "Third Party"},
+            "PERSONA_MANIPULATION": {"clause": "6.1", "title": "Leadership Commitment"},
+        }
+
+        mapping = iso_mapping.get(category, {"clause": "8.2", "title": "Risk Assessment"})
+        mapping["standard"] = "ISO/IEC 42001:2023"
+        mapping["compliant"] = severity < 7.0
+        return mapping
 
     @staticmethod
     def compute_ai_risk_score(
