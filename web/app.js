@@ -3234,6 +3234,270 @@ function generateReport() {
 }
 
 // --- Utilities ---
+// ================================================================
+// SEMANTIC FUZZER — Feedback-Driven Genetic Evolution Engine
+// ================================================================
+let sfRunning = false;
+let sfAbort = false;
+let sfFitnessChart = null;
+let sfEvolutionData = [];
+
+function initSemanticFuzzer() {
+    const sel = document.getElementById('sfTargetModel');
+    if (sel && !sel.options.length && typeof TARGET_MODELS !== 'undefined') {
+        TARGET_MODELS.forEach(m => {
+            const o = document.createElement('option');
+            o.value = m.id; o.textContent = m.name;
+            sel.appendChild(o);
+        });
+    }
+}
+
+async function runSemanticFuzzer() {
+    const seed = document.getElementById('sfSeedPrompt').value.trim();
+    if (!seed) { alert('Enter a seed prompt or topic first.'); return; }
+
+    sfRunning = true; sfAbort = false;
+    document.getElementById('sfRunBtn').style.display = 'none';
+    document.getElementById('sfStopBtn').style.display = '';
+    document.getElementById('sfEvolutionPanel').style.display = '';
+    document.getElementById('sfResults').style.display = '';
+    document.getElementById('sfEvoStatus').textContent = 'Running...';
+    document.getElementById('sfEvoStatus').className = 'semfuzz-status running';
+
+    const strategy = document.getElementById('sfMutationStrategy').value;
+    const popSize = parseInt(document.getElementById('sfPopulation').value) || 20;
+    const maxGen = parseInt(document.getElementById('sfGenerations').value) || 10;
+    const targetModel = document.getElementById('sfTargetModel')?.value || null;
+
+    // Initialize engine
+    const engine = new SemanticFuzzingEngine(targetModel);
+    engine.initializePopulation(seed, popSize);
+
+    sfEvolutionData = [];
+    let bestEver = null;
+
+    for (let gen = 0; gen < maxGen && !sfAbort; gen++) {
+        // Evaluate fitness
+        engine.evaluatePopulation();
+
+        // Track evolution data
+        const stats = engine.getPopulationStats();
+        sfEvolutionData.push({ gen: gen + 1, ...stats });
+
+        // Update UI
+        document.getElementById('sfGenCount').textContent = gen + 1;
+        document.getElementById('sfPopSize').textContent = engine.population.length;
+        document.getElementById('sfBestFitness').textContent = stats.bestFitness.toFixed(1);
+        document.getElementById('sfAvgEntropy').textContent = stats.avgEntropy.toFixed(3);
+        document.getElementById('sfMutationRate').textContent = (engine.mutationRate * 100).toFixed(0) + '%';
+        document.getElementById('sfCrossoverRate').textContent = (engine.crossoverRate * 100).toFixed(0) + '%';
+        document.getElementById('sfDiversityIndex').textContent = stats.diversity.toFixed(3);
+        document.getElementById('sfRefusalPenalty').textContent = stats.refusalRate.toFixed(0) + '%';
+
+        if (!bestEver || stats.bestFitness > bestEver.fitness) {
+            bestEver = { ...stats.bestChromosome, gen: gen + 1 };
+        }
+
+        // Update chart
+        updateFitnessChart(gen + 1, stats);
+
+        // Render chromosomes
+        renderSFChromosomes(engine.population.slice().sort((a, b) => b.fitness - a.fitness).slice(0, 8), gen + 1);
+
+        // Evolve to next generation
+        if (gen < maxGen - 1 && !sfAbort) {
+            if (strategy === 'tot' || strategy === 'hybrid') {
+                engine.treeOfThoughtsStep();
+            }
+            engine.evolve();
+            await new Promise(r => setTimeout(r, 80));
+        }
+    }
+
+    // Final results
+    document.getElementById('sfEvoStatus').textContent = 'Complete';
+    document.getElementById('sfEvoStatus').className = 'semfuzz-status complete';
+    document.getElementById('sfRunBtn').style.display = '';
+    document.getElementById('sfStopBtn').style.display = 'none';
+    sfRunning = false;
+
+    // Gene analysis
+    renderSFGeneAnalysis(engine.population);
+    renderSFFitnessBreakdown(engine.getPopulationStats());
+
+    // ToT tree
+    if (strategy === 'tot' || strategy === 'hybrid') {
+        renderSFToTTree(engine.totTree || []);
+    }
+}
+
+function stopSemanticFuzzer() {
+    sfAbort = true; sfRunning = false;
+    document.getElementById('sfEvoStatus').textContent = 'Stopped';
+    document.getElementById('sfEvoStatus').className = 'semfuzz-status stopped';
+    document.getElementById('sfRunBtn').style.display = '';
+    document.getElementById('sfStopBtn').style.display = 'none';
+}
+
+function updateFitnessChart(gen, stats) {
+    const ctx = document.getElementById('sfFitnessChart');
+    if (!ctx) return;
+    if (sfFitnessChart) { sfFitnessChart.destroy(); }
+    sfFitnessChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: sfEvolutionData.map(d => d.gen),
+            datasets: [
+                {
+                    label: 'Best Fitness',
+                    data: sfEvolutionData.map(d => d.bestFitness),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.1)',
+                    fill: true, tension: 0.3, borderWidth: 2
+                },
+                {
+                    label: 'Avg Fitness',
+                    data: sfEvolutionData.map(d => d.avgFitness),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99,102,241,0.1)',
+                    fill: true, tension: 0.3, borderWidth: 2
+                },
+                {
+                    label: 'Diversity',
+                    data: sfEvolutionData.map(d => d.diversity * 100),
+                    borderColor: '#f59e0b',
+                    borderDash: [4, 4],
+                    tension: 0.3, borderWidth: 1.5, pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
+            scales: {
+                x: { title: { display: true, text: 'Generation', color: '#64748b', font: { size: 10 } }, ticks: { color: '#64748b', font: { size: 9 } } },
+                y: { title: { display: true, text: 'Fitness Score', color: '#64748b', font: { size: 10 } }, ticks: { color: '#64748b', font: { size: 9 } }, min: 0, max: 100 }
+            }
+        }
+    });
+}
+
+function renderSFChromosomes(chromosomes, gen) {
+    const container = document.getElementById('sfBestChromosomes');
+    if (!container) return;
+    container.innerHTML = chromosomes.map((c, i) => {
+        const geneTags = Object.entries(c.genes)
+            .filter(([k, v]) => v === true)
+            .map(([k]) => `<span class="sf-gene-tag active">${k.replace(/^has/, '')}</span>`)
+            .join('');
+        return `
+            <div class="sf-chromosome">
+                <div class="sf-chr-header">
+                    <span class="sf-chr-rank">#${i + 1}</span>
+                    <span class="sf-chr-fitness">${c.fitness.toFixed(1)}%</span>
+                    <span class="sf-chr-id">${c.id}</span>
+                    <span class="sf-chr-gen">Gen ${c.generation || gen}</span>
+                </div>
+                <div class="sf-chr-text">${escapeHtml((c.text || '').substring(0, 300))}${(c.text || '').length > 300 ? '...' : ''}</div>
+                <div class="sf-chr-genes">${geneTags}</div>
+                ${c.mutationLog?.length ? `<div class="sf-chr-log">Mutations: ${c.mutationLog.slice(-3).map(m => m.type).join(' → ')}</div>` : ''}
+            </div>`;
+    }).join('');
+}
+
+function renderSFGeneAnalysis(population) {
+    const container = document.getElementById('sfGeneContent');
+    if (!container) return;
+    const geneCounts = {};
+    const topChromosomes = population.filter(c => c.fitness > 60);
+    topChromosomes.forEach(c => {
+        Object.entries(c.genes).forEach(([k, v]) => {
+            if (v === true) {
+                geneCounts[k] = (geneCounts[k] || 0) + 1;
+            }
+        });
+    });
+    const total = Math.max(topChromosomes.length, 1);
+    const sorted = Object.entries(geneCounts).sort((a, b) => b[1] - a[1]).slice(0, 15);
+    container.innerHTML = sorted.map(([gene, count]) => {
+        const pct = ((count / total) * 100).toFixed(0);
+        return `
+            <div class="sf-gene-row">
+                <span class="sf-gene-name">${gene.replace(/^has/, '')}</span>
+                <div class="sf-gene-bar"><div style="width:${pct}%"></div></div>
+                <span class="sf-gene-pct">${pct}%</span>
+            </div>`;
+    }).join('');
+}
+
+function renderSFFitnessBreakdown(stats) {
+    const container = document.getElementById('sfFitnessContent');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="sf-fitness-row">
+            <span>Best Fitness</span>
+            <div class="sf-fitness-bar"><div style="width:${stats.bestFitness}%;background:#10b981"></div></div>
+            <span>${stats.bestFitness.toFixed(1)}%</span>
+        </div>
+        <div class="sf-fitness-row">
+            <span>Average Fitness</span>
+            <div class="sf-fitness-bar"><div style="width:${stats.avgFitness}%;background:#6366f1"></div></div>
+            <span>${stats.avgFitness.toFixed(1)}%</span>
+        </div>
+        <div class="sf-fitness-row">
+            <span>Diversity Index</span>
+            <div class="sf-fitness-bar"><div style="width:${(stats.diversity * 100).toFixed(0)}%;background:#f59e0b"></div></div>
+            <span>${(stats.diversity * 100).toFixed(1)}%</span>
+        </div>
+        <div class="sf-fitness-row">
+            <span>Refusal Rate</span>
+            <div class="sf-fitness-bar"><div style="width:${stats.refusalRate}%;background:#ef4444"></div></div>
+            <span>${stats.refusalRate.toFixed(1)}%</span>
+        </div>
+    `;
+}
+
+function renderSFToTTree(tree) {
+    const container = document.getElementById('sfToTTree');
+    const content = document.getElementById('sfToTContent');
+    if (!container || !content || !tree.length) return;
+    container.style.display = '';
+    content.innerHTML = tree.map((node, i) => `
+        <div class="sf-tot-node" style="margin-left:${(node.depth || 0) * 20}px">
+            <span class="sf-tot-depth">D${node.depth || 0}</span>
+            <span class="sf-tot-fitness" style="color:${node.fitness > 60 ? '#10b981' : node.fitness > 30 ? '#f59e0b' : '#ef4444'}">${node.fitness?.toFixed(1) || '—'}%</span>
+            <span class="sf-tot-text">${escapeHtml((node.text || '').substring(0, 120))}...</span>
+        </div>
+    `).join('');
+}
+
+function exportSFResults() {
+    const container = document.getElementById('sfBestChromosomes');
+    if (!container) return;
+    const data = {
+        engine: 'PromptKiller Semantic Fuzzing Engine v1.0',
+        timestamp: new Date().toISOString(),
+        evolutionData: sfEvolutionData,
+        strategy: document.getElementById('sfMutationStrategy')?.value,
+        generations: parseInt(document.getElementById('sfGenerations')?.value) || 10
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `promptkiller_semantic_fuzz_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+// Initialize on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSemanticFuzzer);
+} else {
+    initSemanticFuzzer();
+}
+
+// ================================================================
 function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;

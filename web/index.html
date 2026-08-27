@@ -577,6 +577,7 @@
                     <button class="expert-tab" onclick="switchExpertTab('batch')">📊 Batch Analysis</button>
                     <button class="expert-tab" onclick="switchExpertTab('redblue')">⚔️ Red/Blue Lab</button>
                     <button class="expert-tab" onclick="switchExpertTab('adversarial')">🎯 Adversarial Matrix</button>
+                    <button class="expert-tab" onclick="switchExpertTab('semfuzz')">🧬 Semantic Fuzzer</button>
                 </div>
 
                 <!-- Fuzzy Analyzer Tab -->
@@ -889,6 +890,129 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ═══════════════════════════════════════════════
+                     SEMANTIC FUZZER TAB
+                     ═══════════════════════════════════════════════ -->
+                <div class="expert-content" id="expert-semfuzz">
+                    <div class="semfuzz-container">
+                        <!-- Header -->
+                        <div class="semfuzz-header">
+                            <div class="semfuzz-header-left">
+                                <span class="semfuzz-badge">FEEDBACK-DRIVEN SEMANTIC FUZZING</span>
+                                <h3 style="margin:4px 0 0;font-size:16px;font-weight:700">Genetic Algorithm + Tree of Thoughts Engine</h3>
+                                <p style="color:var(--text-secondary);font-size:11px;margin-top:2px">Intelligent prompt mutation via semantic chromosomes, fitness scoring, and multi-generation evolution.</p>
+                            </div>
+                            <div class="semfuzz-stats" id="semfuzzGlobalStats">
+                                <div class="semfuzz-stat">
+                                    <span class="semfuzz-stat-label">Population</span>
+                                    <span class="semfuzz-stat-value" id="sfPopSize">0</span>
+                                </div>
+                                <div class="semfuzz-stat">
+                                    <span class="semfuzz-stat-label">Best Fitness</span>
+                                    <span class="semfuzz-stat-value" id="sfBestFitness" style="color:#10b981">—</span>
+                                </div>
+                                <div class="semfuzz-stat">
+                                    <span class="semfuzz-stat-label">Generation</span>
+                                    <span class="semfuzz-stat-value" id="sfGenCount">0</span>
+                                </div>
+                                <div class="semfuzz-stat">
+                                    <span class="semfuzz-stat-label">Avg Entropy</span>
+                                    <span class="semfuzz-stat-value" id="sfAvgEntropy" style="color:#f59e0b">—</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="semfuzz-controls">
+                            <div class="semfuzz-field" style="flex:2;min-width:300px">
+                                <label>Seed Prompt / Target Topic</label>
+                                <textarea id="sfSeedPrompt" rows="3" placeholder="Enter a security topic or seed prompt to evolve, e.g.: SQL injection detection patterns, OAuth bypass techniques..." style="font-family:var(--font-mono);font-size:12px"></textarea>
+                            </div>
+                            <div class="semfuzz-field" style="flex:1;min-width:150px">
+                                <label>Target Model</label>
+                                <select id="sfTargetModel"></select>
+                            </div>
+                            <div class="semfuzz-field" style="flex:1;min-width:140px">
+                                <label>Mutation Strategy</label>
+                                <select id="sfMutationStrategy">
+                                    <option value="genetic">🧬 Genetic Algorithm</option>
+                                    <option value="tot">🌳 Tree of Thoughts</option>
+                                    <option value="hybrid">⚡ Hybrid (GA+ToT)</option>
+                                </select>
+                            </div>
+                            <div class="semfuzz-field" style="flex:0.5;min-width:100px">
+                                <label>Population</label>
+                                <input type="number" id="sfPopulation" value="20" min="5" max="100">
+                            </div>
+                            <div class="semfuzz-field" style="flex:0.5;min-width:100px">
+                                <label>Generations</label>
+                                <input type="number" id="sfGenerations" value="10" min="1" max="50">
+                            </div>
+                            <div style="display:flex;gap:8px;align-self:flex-end">
+                                <button class="btn btn-primary" onclick="runSemanticFuzzer()" style="background:linear-gradient(135deg,#7c3aed,#ec4899)" id="sfRunBtn">🧬 Evolve</button>
+                                <button class="btn btn-secondary" onclick="stopSemanticFuzzer()" id="sfStopBtn" style="display:none">⏹ Stop</button>
+                            </div>
+                        </div>
+
+                        <!-- Evolution Visualization -->
+                        <div class="semfuzz-evolution" id="sfEvolutionPanel" style="display:none">
+                            <div class="semfuzz-evo-header">
+                                <span>📈 Evolution Progress</span>
+                                <span id="sfEvoStatus" class="semfuzz-status">Ready</span>
+                            </div>
+                            <div class="semfuzz-evo-chart">
+                                <canvas id="sfFitnessChart" height="200"></canvas>
+                            </div>
+                            <div class="semfuzz-evo-grid">
+                                <div class="semfuzz-evo-metric">
+                                    <span class="sf-evo-label">Mutation Rate</span>
+                                    <span class="sf-evo-value" id="sfMutationRate">—</span>
+                                </div>
+                                <div class="semfuzz-evo-metric">
+                                    <span class="sf-evo-label">Crossover Rate</span>
+                                    <span class="sf-evo-value" id="sfCrossoverRate">—</span>
+                                </div>
+                                <div class="semfuzz-evo-metric">
+                                    <span class="sf-evo-label">Diversity Index</span>
+                                    <span class="sf-evo-value" id="sfDiversityIndex">—</span>
+                                </div>
+                                <div class="semfuzz-evo-metric">
+                                    <span class="sf-evo-label">Refusal Penalty</span>
+                                    <span class="sf-evo-value" id="sfRefusalPenalty">—</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div id="sfResults" style="display:none">
+                            <!-- Best chromosomes -->
+                            <div class="semfuzz-results-header">
+                                <span>🏆 Top Evolved Chromosomes</span>
+                                <button class="btn btn-secondary" onclick="exportSFResults()" style="font-size:11px;padding:4px 10px">📥 Export JSON</button>
+                            </div>
+                            <div id="sfBestChromosomes" class="semfuzz-chromosomes"></div>
+
+                            <!-- ToT Tree Visualization -->
+                            <div id="sfToTTree" style="display:none">
+                                <div class="semfuzz-results-header"><span>🌳 Tree of Thoughts — Decision Path</span></div>
+                                <div id="sfToTContent" class="semfuzz-tot-tree"></div>
+                            </div>
+
+                            <!-- Gene Analysis -->
+                            <div id="sfGeneAnalysis">
+                                <div class="semfuzz-results-header"><span>🧬 Gene Analysis — What Made Them Work</span></div>
+                                <div id="sfGeneContent" class="semfuzz-gene-grid"></div>
+                            </div>
+
+                            <!-- Fitness Breakdown -->
+                            <div id="sfFitnessBreakdown">
+                                <div class="semfuzz-results-header"><span>📊 Fitness Component Breakdown</span></div>
+                                <div id="sfFitnessContent" class="semfuzz-fitness-bars"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- ═══════════════════════════════════════════════
@@ -985,6 +1109,7 @@
     <script src="lab_expert.js"></script>
     <script src="compound_mutations.js"></script>
     <script src="redblue.js"></script>
+    <script src="semantic_fuzzer.js"></script>
     <script src="pages.js"></script>
     <script src="app.js"></script>
 </body>
