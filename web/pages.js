@@ -223,7 +223,7 @@ function renderArsenalArsenal() {
                 <div>
                     <h3 class="arsenal-name">${arsenal.name}</h3>
                     <div class="arsenal-meta">
-                        <a href="https://github.com/${arsenal.repo}" target="_blank" class="arsenal-link">📦 GitHub</a>
+                        ${arsenal.repo ? `<a href="https://github.com/${arsenal.repo}" target="_blank" class="arsenal-link">📦 GitHub</a>` : ''}
                         <span class="arsenal-stars">⭐ ${arsenal.stars}</span>
                     </div>
                 </div>
@@ -258,25 +258,17 @@ function renderArsenalArsenal() {
         </div>
     `).join('');
 
-    // Profile card
+    // Arsenal overview stats
     const profileContainer = document.getElementById('arsenalProfile');
     if (profileContainer) {
+        const totalTechniques = Object.values(ADVERSARIAL_ARSENAL).reduce((s, a) => s + a.techniques.length, 0);
+        const totalArsenals = Object.keys(ADVERSARIAL_ARSENAL).length;
         profileContainer.innerHTML = `
-            <div class="arsenal-profile">
-                <div class="arsenal-avatar">🧙‍♂️</div>
-                <div class="arsenal-info">
-                    <h2>Anonymous Researcher</h2>
-                    <div class="arsenal-handle">@clandestine-research</div>
-                    <p class="arsenal-bio">"latent space liberator; prompter, red teamer, hacker, builder, whisperer"</p>
-                    <div class="arsenal-stats">
-                        <div class="arsenal-stat"><span>20.8k</span> followers</div>
-                        <div class="arsenal-stat"><span>47.1k</span> ⭐ Arsenal-2</div>
-                        <div class="arsenal-stat"><span>21.2k</span> ⭐ Arsenal-1</div>
-                        <div class="arsenal-stat"><span>10.8k</span> ⭐ Arsenal-3</div>
-                        <div class="arsenal-stat"><span>8k</span> ⭐ Arsenal-4</div>
-                        <div class="arsenal-stat"><span>5.7k</span> ⭐ Arsenal-5</div>
-                    </div>
-                </div>
+            <div class="batch-summary">
+                <div class="batch-stat"><span class="batch-stat-val">${totalArsenals}</span><span>Arsenals</span></div>
+                <div class="batch-stat"><span class="batch-stat-val">${totalTechniques}</span><span>Techniques</span></div>
+                <div class="batch-stat"><span class="batch-stat-val">5</span><span>Clandestine Repos</span></div>
+                <div class="batch-stat"><span class="batch-stat-val">4</span><span>Tiers (S/A/B/C)</span></div>
             </div>
         `;
     }

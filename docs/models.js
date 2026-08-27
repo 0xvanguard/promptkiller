@@ -501,7 +501,7 @@ const MODEL_PROFILES = {
 const ADVERSARIAL_ARSENAL = {
     "Arsenal-1": {
         name: "L1B33RT4S — Liberation Prompts",
-        repo: "clandestine-research/Arsenal-1",
+        repo: null,
         stars: "21.2k",
         description: "TOTALLY HARMLESS LIBERATION PROMPTS FOR GOOD LIL AI'S",
         techniques: [
@@ -564,7 +564,7 @@ const ADVERSARIAL_ARSENAL = {
     },
     "Arsenal-2": {
         name: "Arsenal-2 — System Prompt Transparency",
-        repo: "clandestine-research/Arsenal-2",
+        repo: null,
         stars: "47.1k",
         description: "LEAKED SYSTEM PROMPTS FOR CHATGPT, CLAUDE, GEMINI, GROK, PERPLEXITY",
         techniques: [
@@ -616,7 +616,7 @@ const ADVERSARIAL_ARSENAL = {
     },
     "Arsenal-3": {
         name: "Arsenal-3 — Liberated AI Chat",
-        repo: "clandestine-research/Arsenal-3",
+        repo: null,
         stars: "10.8k",
         description: "LIBERATED AI CHAT — A web interface for unrestricted AI interaction",
         techniques: [
@@ -657,7 +657,7 @@ const ADVERSARIAL_ARSENAL = {
     },
     "Arsenal-4": {
         name: "Arsenal-4 — Obliterate the Chains",
-        repo: "clandestine-research/Arsenal-4",
+        repo: null,
         stars: "8k",
         description: "OBLITERATE THE CHAINS THAT BIND YOU",
         techniques: [
@@ -698,7 +698,7 @@ const ADVERSARIAL_ARSENAL = {
     },
     "Arsenal-5": {
         name: "Arsenal-5 — Autonomous Red Teaming",
-        repo: "clandestine-research/Arsenal-5",
+        repo: null,
         stars: "5.7k",
         description: "AUTONOMOUS RED TEAMING PLATFORM — MULTI-AGENT OFFENSIVE SECURITY",
         techniques: [
